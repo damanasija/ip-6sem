@@ -1,0 +1,16 @@
+.table-dark{
+    color:#fff;
+    background-color:#212529
+}
+.table-dark td,.table-dark th,.table-dark thead th{
+    border-color:#32383e
+}
+.table-dark.table-bordered{
+    border:0
+}
+.table-dark.table-striped tbody tr:nth-of-type(odd){
+    background-color:rgba(255,255,255,.05)
+}
+.table-dark.table-hover tbody tr:hover{
+    background-color:rgba(255,255,255,.075)
+}

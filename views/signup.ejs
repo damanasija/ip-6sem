@@ -1,0 +1,152 @@
+<% include ./partials/header%>
+<% include ./navbar %>
+<h1 class="jumbotron text-center">Sign Up for Winch</h1>
+
+<div class="container center-block">
+  <form action="/newUser" method="POST" id="signup">
+
+    <div id="Login Details" class="container">
+
+      <!-- heading for login details -->
+      <div class="row">
+        <div class="col-md-6">
+          <h4 class="lead text-center bg-info" style="width: 25%;">Login Details</h4>
+        </div>
+      </div>
+      <!-- Field for username -->
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" name="username" class="form-control" id="username" placeholder="Username" required>
+      </div>
+      <!-- Field for passsword -->
+      <div class="form-group">
+        <label for="pass">Password</label>
+        <input type="password" name="password" class="form-control" id="pass" placeholder="Password" required>
+      </div>
+      <!-- field for confirming password -->
+      <div class="form-group">
+        <label for="confirmPasss">Confirm Password</label>
+        <input type="password" name="confirmPass" class="form-control" id="confirmPasss" placeholder="Confirm Password" required>
+      </div>
+    </div>
+
+    <hr>
+
+    <div id="companyDetails">
+
+      <!-- heading for company details -->
+      <div class="row">
+        <div class="col-md-6">
+          <h4 class="lead text-center bg-info" style="width: 40%;"> Company/Firm Details</h4>
+        </div>
+      </div>
+
+      <!-- company detail fields -->
+      <div class="row">
+
+        <!-- 1st column -->
+        <div class="col-md-6">
+
+          <!-- company Name -->
+          <div class="form-group">
+            <label for="company_name">Company Name</label>
+            <input type="text" name="company_name" class="form-control" id="company_name" placeholder="Company Name" required>
+          </div>
+
+          <!-- company email -->
+          <div class="form-group">
+            <label for="email">Company Email</label>
+            <input type="email" name="email" class="form-control" id="email" placeholder="Email" required>
+          </div>
+
+          <!-- company phone and GSTIN fields in a single row -->
+          <div class="form-group">
+            <div class="row">
+
+              <!-- phone no. field -->
+              <span class="col-md-7 col-sm-12">
+                <label for="phone">Company Phone</label>
+                <br>
+                <input type="text" class="btn btn-disabled" value="+91" size="1" disabled>
+                <span style="display: inline-block;">
+                  <input type="text" name="phone" class="form-control" id="phone" placeholder="Phone Number" required>
+                </span>
+              </span>
+
+              <!-- GSTIN field -->
+              <span class="col-md-5 col-sm-12">
+                <label for="gstin">GSTIN</label>
+                <span style="display: inline-block;">
+                  <input type="text" name="gstin" class="form-control" size="16" id="gstin" placeholder="GSTIN" required>
+                </span>
+              </span>
+
+            </div>
+          </div>
+
+          <!-- company website -->
+          <div class="form-group">
+            <label for="website">Company Website</label>
+            <input type="text" name="website" class="form-control" id="website" placeholder="Website" required>
+          </div>
+
+        </div>
+
+        <!-- 2nd column -->
+        <div class="col-md-6">
+
+          <!-- address field -->
+          <div class="form-group">
+            <label for="address">Address</label>
+            <!-- <textarea form="signup" name="address" class="form-control" id="address" required></textarea> -->
+            <input type="text" name="address" class="form-control" id="address" placeholder="Address">
+          </div>
+
+          <!-- city -->
+          <div class="form-group">
+            <label for="city">City</label>
+            <input type="text" name="city" class="form-control" id="city" placeholder="City" required>
+          </div>
+
+          <!-- select menu for states. the list of states is obtained via the states array sent through app.js -->
+          <label for="state">State</label>
+          <select name="state" id="state" class="form-control">
+            <option>Select State</option>
+            <% states.forEach( (state) => { %>
+              <option value="<%= state.name%>"><strong><%= state.name %></strong></option>
+            <% }) %>
+          </select>
+
+          <br>
+          <!-- putting pincode and logo file iput fields in 2 different colums of one row -->
+          <div class="row">
+
+            <!-- field for pincode -->
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="pincode">Pin Code</label>
+                <input type="text" name="pincode" class="form-control" id="pincode" placeholder="Pin Code" required>
+              </div>
+            </div>
+
+            <!-- for choosing company logo -->
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="logo">Choose Company Logo</label>
+                <input type="file" name="logo" id="logo">
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <br>
+    <input type="submit" class="btn btn-success  btn-lg center-block" value="submit">
+  </form>
+</div>
+
+
+<% include ./partials/footer%>
