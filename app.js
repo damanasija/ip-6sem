@@ -180,7 +180,7 @@ app.get("/", (req, res) => {
 app.get("/signup", (req, res) => {
     res.render("signup", {states : states});
 });
-
+ 
 app.get("/login", (req, res) => {
     res.render("login");
 });
