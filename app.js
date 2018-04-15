@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 
 app.set('view engine', 'ejs');
 
+app.use(express.static(__dirname + "public"));
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
@@ -13,7 +14,7 @@ let user = {
     username: "Daman",
     company_name: "DA Inc.",
     country: "INDIA",
-    address: "2940B, backside Gurudwara Singh Sabha",
+    address: "2940B, Sunny Lane",
     city: "RAJPURA",
     state: "PUNJAB",
     pin_code: "140401",
@@ -186,8 +187,8 @@ app.get("/login", (req, res) => {
     res.render("login");
 });
 
-app.get("/bill", (req, res) => {
-    res.render("bill",{user: user, states: states});
+app.get("/bills/new", (req, res) => {
+    res.render("newBill",{user: user, states: states});
 });
 
 
@@ -197,7 +198,6 @@ app.get("*", (req, res) => {
 
 
 //post routes
-
 app.post("/newUser", (req, res) => {
     console.log(req.body);
     res.send(req.body);

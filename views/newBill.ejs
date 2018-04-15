@@ -80,7 +80,8 @@
                         <th class="text-center" rowspan="2">Taxable Value</th>
                         <th class="text-center" colspan="2">CGST</th>
                         <th class="text-center" colspan="2">SGST</th>
-                        <th class="text-center" rowspan="2" colspan="4">Net Amount</th>
+                        <th class="text-center" rowspan="2" >Net Amount</th>
+                        <th class="text-center" rowspan="2">Action</th>                                                   
                         </center>
                     </tr>
                     <tr class="bg-info">
@@ -94,7 +95,8 @@
             </table>
         </div>
         <div class="col-md-1">
-                <button class="btn btn-primary" onclick="addSgstItem()">Add Item</button>
+            <button class="btn btn-primary" onclick="addSgstItem()">Add Item</button>
+            <button class="btn btn-success" style="margin-top: 1.5em;" disabled>Submit</button>          
         </div>    
     </div>
 </div>
@@ -118,6 +120,7 @@
                         <th class="text-center" rowspan="2">Taxable Value</th>
                         <th class="text-center" colspan="2">IGST</th>
                         <th class="text-center" rowspan="2" colspan="4">Net Amount</th>
+                        <th class="text-center" rowspan="2">Action</th>                                                                           
                         </center>
                     </tr>
                     <tr class="bg-info">
@@ -130,6 +133,7 @@
         </div>
         <div class="col-md-1">
                 <button class="btn btn-primary" onclick="addIgstItem()">Add Item</button>
+                <button disabled="disabled" class="btn btn-success" style="margin-top: 1.5em;">Submit</button>
         </div>    
     </div>
 </div>
