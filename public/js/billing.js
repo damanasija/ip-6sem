@@ -1,10 +1,12 @@
 let sgstSerialNo = 0;
 let igstSerialNo = 0;
+let taxRates = null;
 
 
 
 document.getElementById("igstTable").style.display = "none";
 document.getElementById("firmState").value = document.getElementById("userState").innerHTML;
+
 
 const billSelector = () =>{
     userState = document.getElementById("userState").innerHTML;
@@ -238,6 +240,7 @@ const addSgstItem = () => {
     newRateInput.className = "form-control";
     newRateCell.appendChild(newRateInput);
 
+
     let newDiscountCell = document.createElement("td");
     let newDiscountInput = document.createElement("input");
     newDiscountInput.setAttribute("type", "text");
@@ -255,9 +258,9 @@ const addSgstItem = () => {
     let newCgstRateCell = document.createElement("td");
     let newCgstRateInput = document.createElement("input");
     newCgstRateInput.setAttribute("type", "text");
-    newCgstRateInput.setAttribute("size", "1");
-    newCgstRateInput.setAttribute("disabled", true);
-    //newCgstRateInput.className="btn btn-sm btn-disabled";
+    newCgstRateInput.setAttribute("size", "4");
+    //newCgstRateInput.setAttribute("disabled", true);
+    newCgstRateInput.className="form-control";
     newCgstRateCell.appendChild(newCgstRateInput);
 
     let newCgstAmtCell = document.createElement("td");
@@ -272,7 +275,7 @@ const addSgstItem = () => {
     let newSgstRateInput = document.createElement("input");
     newSgstRateInput.setAttribute("type", "text");
     newSgstRateInput.setAttribute("size", "1");
-    newSgstRateInput.setAttribute("disabled", true);
+    //newSgstRateInput.setAttribute("disabled", true);
     //newSgstRateInput.className="btn btn-sm btn-disabled";
     newSgstRateCell.appendChild(newSgstRateInput);
 
