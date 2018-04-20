@@ -1,11 +1,30 @@
+
 let sgstSerialNo = 0;
 let igstSerialNo = 0;
 let taxRates = null;
 
-
+const isNullOrUndefined = (reference) => {
+    if(reference == undefined || reference == null)
+        return 1;
+        return 0;
+}
 
 document.getElementById("igstTable").style.display = "none";
 document.getElementById("firmState").value = document.getElementById("userState").innerHTML;
+
+const sgstCalculator = (rowRef) =>{
+    sgstValidator(rowRef);
+    let quantity = rowRef.childNodes[3];
+    let ratePerItem = rowRef.childNodes[5];
+    let discount = rowRef.childNodes[6];
+    if(isNullOrUndefined(discount.value)){
+        discount.value = 0;
+    }
+
+}
+const sgstValidator = (rowRef) => {
+    console.log("validated");
+}
 
 
 const billSelector = () =>{
@@ -22,6 +41,7 @@ const billSelector = () =>{
 }
 
 const unsetSelectAll = () =>{
+    
 }
 const states = [
     {
@@ -173,7 +193,7 @@ const states = [
 const addSgstItem = () => {
     let id = ++sgstSerialNo;
     let tableBody = document.getElementById("sgstTableBody");
-
+    let rowId = `row${id}`;
     let newRow = document.createElement("tr");
     newRow.setAttribute("id", `row${id}`);
 
@@ -237,6 +257,7 @@ const addSgstItem = () => {
     let newRateCell = document.createElement("td");
     let newRateInput = document.createElement("input");
     newRateInput.setAttribute("type", "text");
+    newRateInput.setAttribute("oninput", `sgstCalculator(${rowId})`);
     newRateInput.className = "form-control";
     newRateCell.appendChild(newRateInput);
 
@@ -258,7 +279,7 @@ const addSgstItem = () => {
     let newCgstRateCell = document.createElement("td");
     let newCgstRateInput = document.createElement("input");
     newCgstRateInput.setAttribute("type", "text");
-    newCgstRateInput.setAttribute("size", "4");
+    newCgstRateInput.setAttribute("size", "10");
     //newCgstRateInput.setAttribute("disabled", true);
     newCgstRateInput.className="form-control";
     newCgstRateCell.appendChild(newCgstRateInput);
@@ -338,6 +359,7 @@ const setSgstIds = () => {
         sgstTableBody.childNodes[i].id = `row${i + 1}`;
         sgstTableBody.childNodes[i].childNodes[0].innerText = i + 1;
         sgstTableBody.childNodes[i].childNodes[13].firstChild.setAttribute('onclick', `deleteSgstItem(row${i + 1})`);
+        sgstTableBody.childNodes[i].childNodes[5].firstChild.setAttribute('oninput', ("sgstCalculator(row"+ (i + 1) + ")"));
     }
 }
 
