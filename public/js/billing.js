@@ -1,27 +1,92 @@
-
 let sgstSerialNo = 0;
 let igstSerialNo = 0;
 let taxRates = null;
+let alphabetsRegex = /[a-z]/gi;
+const dangerClass = "alert alert-danger";
+const successClass = "alert alert-success";
+
+const displayMessage = (msgString, classValue) => {
+    let timeout = 2000;
+    let messageDiv = document.getElementById("message");
+    messageDiv.innerHTML = `<center>${msgString}</center>`;
+    messageDiv.className = classValue;
+    messageDiv.style.display = "block";
+    window.scrollTo(0, messageDiv.offsetTop);
+    
+    setTimeout(() => {
+        messageDiv.style.display = "none";
+    }, timeout);
+    
+}
 
 const isNullOrUndefined = (reference) => {
-    if(reference == undefined || reference == null)
+    if(reference === undefined || reference === null)
         return 1;
-        return 0;
+    return 0;
 }
 
 document.getElementById("igstTable").style.display = "none";
 document.getElementById("firmState").value = document.getElementById("userState").innerHTML;
 
-const sgstCalculator = (rowRef) =>{
-    sgstValidator(rowRef);
-    let quantity = rowRef.childNodes[3];
-    let ratePerItem = rowRef.childNodes[5];
-    let discount = rowRef.childNodes[6];
-    if(isNullOrUndefined(discount.value)){
-        discount.value = 0;
+const setCgstRate = (rowRef) => {
+    cgstRate = rowRef.childNodes[8].firstChild;
+    if(cgstRate.value == "-" || cgstRate.value < 0){
+        cgstRate.value = 0;
+        let msgString = `<strong>Tax Rates</strong> can't be a <strong>negative</strong> value. 
+        (at row: <strong>${rowRef.id.replace(/^row/g,"")}</strong>)`;
+        displayMessage(msgString, dangerClass);
     }
-
+    if(cgstRate.value > 30){
+        cgstRate.value = 0;
+        let msgString = `<strong>Tax Rates</strong> can't be greater than <strong>30%</strong>.
+        (at row: <strong>${rowRef.id.replace(/^row/g,"")}</strong>)`;
+        displayMessage(msgString, dangerClass);
+    }
+    if(isNaN(cgstRate.value)){
+        cgstRate.value = cgstRate.value.replace(alphabetsRegex, "");
+        let msgString =  `<strong>Tax Rates</strong> are <strong>numeric</strong> values.
+        (at row: <strong>${rowRef.id.replace(/^row/g,"")}</strong>)`;
+        displayMessage(msgString, dangerClass);
+    }
+    if(cgstRate.value != ""){
+        cgstRate.value = parseInt(cgstRate.value);
+        sgstCalculator(rowRef);
+    }
 }
+
+const sgstCalculator = (rowRef) =>{    
+    let quantity = rowRef.childNodes[3].firstChild;
+    let ratePerItem = rowRef.childNodes[5].firstChild;
+    let discount = rowRef.childNodes[6].firstChild;
+    let taxableValue = rowRef.childNodes[7].firstChild;
+    let cgstRate = rowRef.childNodes[8].firstChild;
+    let cgstAmt = rowRef.childNodes[9].firstChild;
+    let sgstRate = rowRef.childNodes[10].firstChild;
+    let sgstAmt = rowRef.childNodes[11].firstChild;
+    let netAmt = rowRef.childNodes[12].firstChild;
+
+
+    // Default values for each field
+    if(quantity.value == "")
+        quantity.value = 1;
+    if(discount.value == "")
+        discount.value = 0;
+    if(cgstRate.value == "")
+        cgstRate.value = 0;
+    sgstRate.value = cgstRate.value;
+
+
+    //sgstValidator(rowRef);
+
+    taxableValue.value = quantity.value * (ratePerItem.value * (1 - discount.value/100 ));
+    cgstAmt.value = taxableValue.value*(cgstRate.value)/100;
+    sgstAmt.value = taxableValue.value*(sgstRate.value)/100;
+    netAmt.value = parseInt(cgstAmt.value) + parseInt(sgstAmt.value) + parseInt(taxableValue.value);
+    // if(isNullOrUndefined(discount.value)){
+    //     discount.value = 0;
+    // }
+}
+
 const sgstValidator = (rowRef) => {
     console.log("validated");
 }
@@ -259,6 +324,7 @@ const addSgstItem = () => {
     newRateInput.setAttribute("type", "text");
     newRateInput.setAttribute("oninput", `sgstCalculator(${rowId})`);
     newRateInput.className = "form-control";
+    newRateInput.setAttribute("size", "35");
     newRateCell.appendChild(newRateInput);
 
 
@@ -273,13 +339,16 @@ const addSgstItem = () => {
     let newTaxInput = document.createElement("input");
     newTaxInput.setAttribute("type", "text");
     newTaxInput.className = "form-control";
+    newTaxInput.setAttribute("size", "30");
     //newTaxElement.setAttribute("colspan", "2");
     newTaxCell.appendChild(newTaxInput);
 
     let newCgstRateCell = document.createElement("td");
     let newCgstRateInput = document.createElement("input");
     newCgstRateInput.setAttribute("type", "text");
-    newCgstRateInput.setAttribute("size", "10");
+    newCgstRateInput.setAttribute("size", "15");
+    newCgstRateCell.setAttribute("oninput", `setCgstRate(${rowId})`);
+    newCgstRateInput.setAttribute("onblur", `sgstCalculator(${rowId})`);
     //newCgstRateInput.setAttribute("disabled", true);
     newCgstRateInput.className="form-control";
     newCgstRateCell.appendChild(newCgstRateInput);
@@ -287,24 +356,26 @@ const addSgstItem = () => {
     let newCgstAmtCell = document.createElement("td");
     let newCgstAmtInput = document.createElement("input");
     newCgstAmtInput.setAttribute("type", "text");
-    newCgstAmtInput.setAttribute("size", "1");
-    //newCgstAmtInput.className="btn btn-sm btn-disabled";
+    newCgstAmtInput.setAttribute("size", "5");
+    newCgstAmtInput.setAttribute("style" , "color:red;");
+    newCgstAmtInput.className="btn btn-default";
     newCgstAmtInput.setAttribute("disabled", true);
     newCgstAmtCell.appendChild(newCgstAmtInput);
 
     let newSgstRateCell = document.createElement("td");
     let newSgstRateInput = document.createElement("input");
     newSgstRateInput.setAttribute("type", "text");
-    newSgstRateInput.setAttribute("size", "1");
-    //newSgstRateInput.setAttribute("disabled", true);
-    //newSgstRateInput.className="btn btn-sm btn-disabled";
+    newSgstRateInput.setAttribute("size", "15");
+    newSgstRateInput.setAttribute("disabled", true);
+    newSgstRateInput.className="form-control";
     newSgstRateCell.appendChild(newSgstRateInput);
 
     let newSgstAmtCell = document.createElement("td");
     let newSgstAmtInput = document.createElement("input");
     newSgstAmtInput.setAttribute("type", "text");
-    newSgstAmtInput.setAttribute("size", "1");
-    //newSgstAmtInput.className="btn btn-sm btn-disabled";
+    newSgstAmtInput.setAttribute("size", "5");
+    newSgstAmtInput.className="btn btn-default";
+    newSgstAmtInput.setAttribute("style" , "color:red;");
     newSgstAmtInput.setAttribute("disabled", true);
     newSgstAmtCell.appendChild(newSgstAmtInput);
 
@@ -312,7 +383,8 @@ const addSgstItem = () => {
     let newNetAmtInput = document.createElement("input");
     newNetAmtInput.setAttribute("type", "text");
     newNetAmtInput.className = "form-control";
-    newNetAmtInput.setAttribute("size", "100");
+    newNetAmtInput.setAttribute("size", "80");
+    newNetAmtInput.setAttribute("style" , "color:#006400;");
     newNetAmtCell.appendChild(newNetAmtInput);
     //newNetAmtElement.setAttribute("colspan", "2");
 
@@ -359,7 +431,8 @@ const setSgstIds = () => {
         sgstTableBody.childNodes[i].id = `row${i + 1}`;
         sgstTableBody.childNodes[i].childNodes[0].innerText = i + 1;
         sgstTableBody.childNodes[i].childNodes[13].firstChild.setAttribute('onclick', `deleteSgstItem(row${i + 1})`);
-        sgstTableBody.childNodes[i].childNodes[5].firstChild.setAttribute('oninput', ("sgstCalculator(row"+ (i + 1) + ")"));
+        sgstTableBody.childNodes[i].childNodes[5].firstChild.setAttribute('oninput', `sgstCalculator(row${i + 1})`);
+        sgstTableBody.childNodes[i].childNodes[8].firstChild.setAttribute('oninput', `setCgstRate(row${i + 1})`);
     }
 }
 
@@ -378,18 +451,13 @@ const addIgstItem = () => {
 
 
     let newDescCell = document.createElement("td");
-
-    //creating input tag
     let newDescInput = document.createElement("input");
     newDescInput.setAttribute("type", "text");
     newDescInput.setAttribute("size", "50");
     newDescInput.className = "form-control";
-
-    
     newDescCell.appendChild(newDescInput);
     
     let newHsnCell = document.createElement("td");
-    //newHsnElementclassName = "col-xs-1";
     let newHsnInput = document.createElement("input");
     newHsnInput.setAttribute("type", "text");
     newHsnInput.className = "form-control";
