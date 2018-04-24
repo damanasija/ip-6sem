@@ -28,31 +28,35 @@ const isNullOrUndefined = (reference) => {
 document.getElementById("igstTable").style.display = "none";
 document.getElementById("firmState").value = document.getElementById("userState").innerHTML;
 
-const setCgstRate = (rowRef) => {
-    cgstRate = rowRef.childNodes[8].firstChild;
-    if(cgstRate.value == "-" || cgstRate.value < 0){
-        cgstRate.value = 0;
+const setTaxRate = (rowRef, index, type) => {
+    taxRate = rowRef.childNodes[index].firstChild;
+    if(taxRate.value == "-" || taxRate.value < 0){
+        taxRate.value = 0;
         let msgString = `<strong>Tax Rates</strong> can't be a <strong>negative</strong> value. 
-        (at row: <strong>${rowRef.id.replace(/^row/g,"")}</strong>)`;
+        (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>)`;
         displayMessage(msgString, dangerClass);
     }
-    if(cgstRate.value > 30){
-        cgstRate.value = 0;
+    if(taxRate.value > 30){
+        taxRate.value = 0;
         let msgString = `<strong>Tax Rates</strong> can't be greater than <strong>30%</strong>.
-        (at row: <strong>${rowRef.id.replace(/^row/g,"")}</strong>)`;
+        (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>)`;
         displayMessage(msgString, dangerClass);
     }
-    if(isNaN(cgstRate.value)){
-        cgstRate.value = cgstRate.value.replace(alphabetsRegex, "");
+    if(isNaN(taxRate.value)){
+        taxRate.value = taxRate.value.replace(alphabetsRegex, "");
         let msgString =  `<strong>Tax Rates</strong> are <strong>numeric</strong> values.
-        (at row: <strong>${rowRef.id.replace(/^row/g,"")}</strong>)`;
+        (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>)`;
         displayMessage(msgString, dangerClass);
     }
-    if(cgstRate.value != ""){
-        cgstRate.value = parseInt(cgstRate.value);
-        sgstCalculator(rowRef);
+    if(taxRate.value != ""){
+        taxRate.value = parseInt(taxRate.value);
+        if(type == "sgst")
+            sgstCalculator(rowRef);
+        else
+            igstCalculator(rowRef);
     }
 }
+
 
 const sgstCalculator = (rowRef) =>{    
     let quantity = rowRef.childNodes[3].firstChild;
@@ -77,7 +81,6 @@ const sgstCalculator = (rowRef) =>{
 
 
     //sgstValidator(rowRef);
-
     taxableValue.value = quantity.value * (ratePerItem.value * (1 - discount.value/100 ));
     cgstAmt.value = taxableValue.value*(cgstRate.value)/100;
     sgstAmt.value = taxableValue.value*(sgstRate.value)/100;
@@ -105,9 +108,6 @@ const billSelector = () =>{
     }
 }
 
-const unsetSelectAll = () =>{
-    
-}
 const states = [
     {
         "key": "AN",
@@ -258,9 +258,9 @@ const states = [
 const addSgstItem = () => {
     let id = ++sgstSerialNo;
     let tableBody = document.getElementById("sgstTableBody");
-    let rowId = `row${id}`;
+    let rowId = `sgstrow${id}`;
     let newRow = document.createElement("tr");
-    newRow.setAttribute("id", `row${id}`);
+    newRow.setAttribute("id", rowId);
 
     // ADDING SERIAL NO 
     let newSerialCell = document.createElement("td");
@@ -323,33 +323,31 @@ const addSgstItem = () => {
     let newRateInput = document.createElement("input");
     newRateInput.setAttribute("type", "text");
     newRateInput.setAttribute("oninput", `sgstCalculator(${rowId})`);
-    newRateInput.className = "form-control";
     newRateInput.setAttribute("size", "35");
+    newRateInput.className = "form-control";
     newRateCell.appendChild(newRateInput);
 
 
     let newDiscountCell = document.createElement("td");
     let newDiscountInput = document.createElement("input");
     newDiscountInput.setAttribute("type", "text");
+    newDiscountInput.setAttribute("size", "2");    
     newDiscountInput.className = "form-control";
-    newDiscountInput.setAttribute("size", "2")
     newDiscountCell.appendChild(newDiscountInput);
 
     let newTaxCell = document.createElement("td");
     let newTaxInput = document.createElement("input");
     newTaxInput.setAttribute("type", "text");
+    newTaxInput.setAttribute("size", "30");    
     newTaxInput.className = "form-control";
-    newTaxInput.setAttribute("size", "30");
-    //newTaxElement.setAttribute("colspan", "2");
     newTaxCell.appendChild(newTaxInput);
 
     let newCgstRateCell = document.createElement("td");
     let newCgstRateInput = document.createElement("input");
     newCgstRateInput.setAttribute("type", "text");
     newCgstRateInput.setAttribute("size", "15");
-    newCgstRateCell.setAttribute("oninput", `setCgstRate(${rowId})`);
+    newCgstRateInput.setAttribute("oninput", `setTaxRate(${rowId}, 8, "sgst")`);
     newCgstRateInput.setAttribute("onblur", `sgstCalculator(${rowId})`);
-    //newCgstRateInput.setAttribute("disabled", true);
     newCgstRateInput.className="form-control";
     newCgstRateCell.appendChild(newCgstRateInput);
 
@@ -396,7 +394,7 @@ const addSgstItem = () => {
     newDeleteButton.appendChild(document.createTextNode("Delete"));
     newDeleteButton.appendChild(deleteIcon);
     //the arguements in the deleteSgstItem() functions send a reference of this row to this function;
-    newDeleteButton.setAttribute("onclick", `deleteSgstItem(row${sgstSerialNo})`);
+    newDeleteButton.setAttribute("onclick", `deleteSgstItem(${rowId})`);
     newDeleteCell.appendChild(newDeleteButton);
     
 
@@ -428,11 +426,13 @@ const deleteSgstItem = (rowReference) => {
 const setSgstIds = () => {
     let sgstTableBody = document.getElementById("sgstTableBody");
     for(let i = 0; i < sgstTableBody.childElementCount; i++){
-        sgstTableBody.childNodes[i].id = `row${i + 1}`;
+        let rowRef = `sgstrow${i + 1}`;
+        sgstTableBody.childNodes[i].id = rowRef;
         sgstTableBody.childNodes[i].childNodes[0].innerText = i + 1;
-        sgstTableBody.childNodes[i].childNodes[13].firstChild.setAttribute('onclick', `deleteSgstItem(row${i + 1})`);
-        sgstTableBody.childNodes[i].childNodes[5].firstChild.setAttribute('oninput', `sgstCalculator(row${i + 1})`);
-        sgstTableBody.childNodes[i].childNodes[8].firstChild.setAttribute('oninput', `setCgstRate(row${i + 1})`);
+        sgstTableBody.childNodes[i].childNodes[13].firstChild.setAttribute('onclick', `deleteSgstItem(${rowRef})`);
+        sgstTableBody.childNodes[i].childNodes[5].firstChild.setAttribute('oninput', `sgstCalculator(${rowRef})`);
+        sgstTableBody.childNodes[i].childNodes[8].firstChild.setAttribute('oninput', `setTaxRate(${rowRef}, 8, "sgst")`);
+        sgstTableBody.childNodes[i].childNodes[8].firstChild.setAttribute('onblur', `sgstCalculator(${rowRef})`);        
     }
 }
 
@@ -441,15 +441,16 @@ const setSgstIds = () => {
 const addIgstItem = () => {
     let id = ++igstSerialNo;
     let tableBody = document.getElementById("igstTableBody");
-
+    let rowId = `igstRow${id}`;
     let newRow = document.createElement("tr");
-    newRow.setAttribute("id", `row${id}`);
+    newRow.setAttribute("id", rowId);
 
+    // ADDING SERIAL NO
     let newSerialCell = document.createElement("td");
     let newSerialNode = document.createTextNode(igstSerialNo);
     newSerialCell.appendChild(newSerialNode);
 
-
+    // ADDING DESCRIPTION FIELD
     let newDescCell = document.createElement("td");
     let newDescInput = document.createElement("input");
     newDescInput.setAttribute("type", "text");
@@ -457,84 +458,88 @@ const addIgstItem = () => {
     newDescInput.className = "form-control";
     newDescCell.appendChild(newDescInput);
     
+    // ADDING HSN FIELD
     let newHsnCell = document.createElement("td");
     let newHsnInput = document.createElement("input");
     newHsnInput.setAttribute("type", "text");
     newHsnInput.className = "form-control";
-    //newHsnElement.setAttribute("colspan", "2");
     newHsnCell.appendChild(newHsnInput);
 
+    // ADDING QUANTITY FIELD
     let newQtyCell = document.createElement("td");
-    //newQtyElement.className="col-xs-1";
     let newQtyInput = document.createElement("input");
     newQtyInput.setAttribute("type", "text");
     newQtyInput.className = "form-control";
     newQtyInput.setAttribute("size", "10");
-    //newQtyElement.setAttribute("colspan", "2");
     newQtyCell.appendChild(newQtyInput);
 
     // making a drop down
     let newUnitCell = document.createElement("td");
     let newUnitSelect = document.createElement("select");
     newUnitSelect.className = "btn btn-sm";
-    //newUnitSelect.className = "form-control";
+
     //dropdown list options
     let pcOption = document.createElement("option");
-    pcOption.setAttribute("value", "Pcs");
-    pcOption.appendChild(document.createTextNode("Pcs"));
+    pcOption.setAttribute("value", "PCS");
+    pcOption.appendChild(document.createTextNode("PCS"));
     
     let kgOption = document.createElement("option");
-    kgOption.setAttribute("value", "Kg");
-    kgOption.appendChild(document.createTextNode("Kg"));
+    kgOption.setAttribute("value", "KG");
+    kgOption.appendChild(document.createTextNode("KG"));
     
     let ltrOption = document.createElement("option");
-    ltrOption.setAttribute("value", "Ltr");
-    ltrOption.appendChild(document.createTextNode("Ltr"));
-    
+    ltrOption.setAttribute("value", "LTR");
+    ltrOption.appendChild(document.createTextNode("LTR"));
 
+    let unitOption = document.createElement("option");
+    unitOption.setAttribute("value", "UNIT");
+    unitOption.appendChild(document.createTextNode("UNIT"));
+    
     //appending these options to select element
     newUnitSelect.appendChild(pcOption);
     newUnitSelect.appendChild(kgOption);
     newUnitSelect.appendChild(ltrOption);
-    //newUnitElement.setAttribute("colspan", "2");
+    newUnitSelect.appendChild(unitOption);
     newUnitCell.appendChild(newUnitSelect);
 
+    // ADDING NEW RATE FIELD
     let newRateCell = document.createElement("td");
-    // newRateElement.class = "col-xs-1";
     let newRateInput = document.createElement("input");
     newRateInput.setAttribute("type", "text");
+    newRateInput.setAttribute("oninput", `igstCalculator(${rowId})`);
+    newRateInput.setAttribute("size", "35");    
     newRateInput.className = "form-control";
-    //newRateElement.setAttribute("colspan", "2");
     newRateCell.appendChild(newRateInput);
 
     let newDiscountCell = document.createElement("td");
     let newDiscountInput = document.createElement("input");
     newDiscountInput.setAttribute("type", "text");
+    newDiscountInput.setAttribute("size", "2")    
     newDiscountInput.className = "form-control";
-    newDiscountInput.setAttribute("size", "2")
-    //newDiscountElement.setAttribute("colspan", "2");
     newDiscountCell.appendChild(newDiscountInput);
 
     let newTaxCell = document.createElement("td");
     let newTaxInput = document.createElement("input");
     newTaxInput.setAttribute("type", "text");
+    newTaxInput.setAttribute("size", "30");
     newTaxInput.className = "form-control";
-    //newTaxElement.setAttribute("colspan", "2");
     newTaxCell.appendChild(newTaxInput);
 
     let newIgstRateCell = document.createElement("td");
     let newIgstRateInput = document.createElement("input");
     newIgstRateInput.setAttribute("type", "text");
-    newIgstRateInput.setAttribute("size", "1");
-    newIgstRateInput.setAttribute("disabled", true);
-    //newIgstRateInput.className="btn btn-sm btn-disabled";
+    newIgstRateInput.setAttribute("size", "15");
+    newIgstRateInput.setAttribute("oninput", `setTaxRate(${rowId}, 8, "igst")`);
+    newIgstRateInput.setAttribute("onblur", `igstCalculator(${rowId})`);
+    newIgstRateInput.className="form-control";
     newIgstRateCell.appendChild(newIgstRateInput);
 
     let newIgstAmtCell = document.createElement("td");
     let newIgstAmtInput = document.createElement("input");
     newIgstAmtInput.setAttribute("type", "text");
-    newIgstAmtInput.setAttribute("size", "1");
-    //newIgstAmtInput.className="btn btn-sm btn-disabled";
+    newIgstAmtInput.setAttribute("size", "5");
+    newIgstAmtInput.setAttribute("style" , "color:red;");
+    newIgstAmtInput.className="btn btn-default";
     newIgstAmtInput.setAttribute("disabled", true);
     newIgstAmtCell.appendChild(newIgstAmtInput);
 
@@ -543,9 +548,20 @@ const addIgstItem = () => {
     newNetAmtInput.setAttribute("type", "text");
     newNetAmtInput.className = "form-control";
     newNetAmtInput.setAttribute("size", "100");
+    newNetAmtInput.setAttribute("style" , "color:#006400;");
     newNetAmtCell.appendChild(newNetAmtInput);
-    //newNetAmtElement.setAttribute("colspan", "2");
+    newNetAmtCell.setAttribute("colspan", "4");
     
+    let newDeleteCell = document.createElement("td");
+    let newDeleteButton = document.createElement("button");
+    newDeleteButton.className = "btn btn-danger btn-sm";
+    let deleteIcon = document.createElement("span");
+    deleteIcon.className = "glyphicon glyphicon-trash";
+    newDeleteButton.appendChild(document.createTextNode("Delete"));
+    newDeleteButton.appendChild(deleteIcon);
+    //the arguements in the deleteIgstItem() functions send a reference of this row to this function;
+    newDeleteButton.setAttribute("onclick", `deleteIgstItem(${rowId})`);
+    newDeleteCell.appendChild(newDeleteButton);
 
     newRow.appendChild(newSerialCell);
     newRow.appendChild(newDescCell);
@@ -558,6 +574,28 @@ const addIgstItem = () => {
     newRow.appendChild(newIgstRateCell);
     newRow.appendChild(newIgstAmtCell);
     newRow.appendChild(newNetAmtCell);
+    newRow.appendChild(newDeleteCell);
+
     // APPENDING THE NEWLY CREATED ROW TO THE TABLEBODY
     tableBody.appendChild(newRow);
+}
+
+const deleteIgstItem = (rowReference) => {
+    let igstTableBody = document.getElementById("igstTableBody");
+    igstTableBody.removeChild(rowReference);
+    igstSerialNo--;
+    setIgstIds();
+}
+
+const setIgstIds = () => {
+    let igstTableBody = document.getElementById("igstTableBody");
+    for(let i = 0; i < igstTableBody.childElementCount; i++){
+        let rowRef = `igstrow${i + 1}`;
+        igstTableBody.childNodes[i].id = rowRef;
+        igstTableBody.childNodes[i].childNodes[0].innerText = i + 1;
+        igstTableBody.childNodes[i].childNodes[13].firstChild.setAttribute('onclick', `deleteIgstItem(${rowRef})`);
+        igstTableBody.childNodes[i].childNodes[5].firstChild.setAttribute('oninput', `igstCalculator(${rowRef})`);
+        igstTableBody.childNodes[i].childNodes[8].firstChild.setAttribute('oninput', `setTaxRate(${rowRef}, 8, "igst")`);
+        igstTableBody.childNodes[i].childNodes[8].firstChild.setAttribute('onblur', `igstCalculator(${rowRef})`);        
+    }
 }
