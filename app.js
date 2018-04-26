@@ -188,7 +188,8 @@ app.get("/login", (req, res) => {
 });
 
 app.get("/bills/new", (req, res) => {
-    res.render("newBill",{user: user, states: states});
+    invoiceNo = Date + "0001";
+    res.render("newBill",{user: user, states: states, invoiceNo: invoiceNo});
 });
 
 

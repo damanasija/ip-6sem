@@ -19,6 +19,24 @@ const displayMessage = (msgString, classValue) => {
     
 }
 
+function roundTo(n, digits) {
+    var negative = false;
+    if (digits === undefined) {
+        digits = 0;
+    }
+        if( n < 0) {
+        negative = true;
+      n = n * -1;
+    }
+    var multiplicator = Math.pow(10, digits);
+    n = parseFloat((n * multiplicator).toFixed(11));
+    n = (Math.round(n) / multiplicator).toFixed(2);
+    if( negative ) {    
+        n = (n * -1).toFixed(2);
+    }
+    return n;
+}
+
 const isNullOrUndefined = (reference) => {
     if(reference === undefined || reference === null)
         return 1;
@@ -28,8 +46,39 @@ const isNullOrUndefined = (reference) => {
 document.getElementById("igstTable").style.display = "none";
 document.getElementById("firmState").value = document.getElementById("userState").innerHTML;
 
+const setDiscount = (rowRef, type) => {
+    let discount = rowRef.childNodes[6].firstChild;
+    if(discount.value == "-" || discount.value < 0){
+        discount.value = 0;
+        let msgString = `<strong>Discount</strong> can't be a negative value.
+        (at row: <strong>${rowRef.id.replace(/\w{4}row/g, "")}</strong>)`;
+        displayMessage(msgString, dangerClass);
+    }
+    if(discount.value > 100){
+        discount.value = 0;
+        let msgString = `<strong>Discount</strong> can't be greater than <strong>100</strong>.
+        (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>)`;
+        displayMessage(msgString, dangerClass);
+    }
+    if(isNaN(discount.value)){
+        discount.value = discount.value.replace(alphabetsRegex, "");
+        let msgString = `<strong>Discount</strong> is a <strong>numeric</strong> value.
+        (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>`;
+        displayMessage(msgString, dangerClass);
+    }
+    if(discount.value != ""){
+        discount.value = parseInt(discount.value);
+        if(type == "sgst")
+            sgstCalculator(rowRef);
+        else if(type == "igst")
+            igstCalculator(rowRef);
+    }
+    
+}
+
+
 const setTaxRate = (rowRef, index, type) => {
-    taxRate = rowRef.childNodes[index].firstChild;
+    let taxRate = rowRef.childNodes[index].firstChild;
     if(taxRate.value == "-" || taxRate.value < 0){
         taxRate.value = 0;
         let msgString = `<strong>Tax Rates</strong> can't be a <strong>negative</strong> value. 
@@ -57,17 +106,41 @@ const setTaxRate = (rowRef, index, type) => {
     }
 }
 
+const setRatePerItem = (rowRef, type) => {
+    let ratePerItem = rowRef.childNodes[5].firstChild;
+    if(ratePerItem.value == "-" || ratePerItem.value < 0){
+        ratePerItem.value = 0;
+        let msgString = `<strong>Rate Per Item</strong> can't be a <strong>negative</strong> value. 
+        (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>)`;
+        displayMessage(msgString, dangerClass);
+    }
+    if(isNaN(ratePerItem.value)){
+        ratePerItem.value = ratePerItem.value.replace(alphabetsRegex, "");
+        let msgString =  `<strong>Rate per Item</strong> is a <strong>numeric</strong> value.
+        (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>)`;
+        displayMessage(msgString, dangerClass);
+    }
+    if(ratePerItem.value != ""){
+        ratePerItem.value = parseInt(ratePerItem.value);
+        if(type == "sgst")
+            sgstCalculator(rowRef);
+        else
+            igstCalculator(rowRef);
+    }
+}
 
 const sgstCalculator = (rowRef) =>{    
-    let quantity = rowRef.childNodes[3].firstChild;
-    let ratePerItem = rowRef.childNodes[5].firstChild;
-    let discount = rowRef.childNodes[6].firstChild;
-    let taxableValue = rowRef.childNodes[7].firstChild;
-    let cgstRate = rowRef.childNodes[8].firstChild;
-    let cgstAmt = rowRef.childNodes[9].firstChild;
-    let sgstRate = rowRef.childNodes[10].firstChild;
-    let sgstAmt = rowRef.childNodes[11].firstChild;
-    let netAmt = rowRef.childNodes[12].firstChild;
+    let quantity       = rowRef.childNodes[3].firstChild;
+    let ratePerItem    = rowRef.childNodes[5].firstChild;
+    let discount       = rowRef.childNodes[6].firstChild;
+    let taxableValue   = rowRef.childNodes[7].firstChild;
+    let cgstRate       = rowRef.childNodes[8].firstChild;
+    let cgstAmt        = rowRef.childNodes[9].firstChild;
+    let sgstRate       = rowRef.childNodes[10].firstChild;
+    let sgstAmt        = rowRef.childNodes[11].firstChild;
+    let netAmt         = rowRef.childNodes[12].firstChild;
+
+    //check valid rate item
 
 
     // Default values for each field
@@ -77,21 +150,15 @@ const sgstCalculator = (rowRef) =>{
         discount.value = 0;
     if(cgstRate.value == "")
         cgstRate.value = 0;
+    if(ratePerItem.value == "")
+        ratePerItem.value = 0;
     sgstRate.value = cgstRate.value;
 
 
-    //sgstValidator(rowRef);
-    taxableValue.value = quantity.value * (ratePerItem.value * (1 - discount.value/100 ));
-    cgstAmt.value = taxableValue.value*(cgstRate.value)/100;
-    sgstAmt.value = taxableValue.value*(sgstRate.value)/100;
-    netAmt.value = parseInt(cgstAmt.value) + parseInt(sgstAmt.value) + parseInt(taxableValue.value);
-    // if(isNullOrUndefined(discount.value)){
-    //     discount.value = 0;
-    // }
-}
-
-const sgstValidator = (rowRef) => {
-    console.log("validated");
+    taxableValue.value = roundTo(quantity.value * (ratePerItem.value * (1 - discount.value/100 )), 2);
+    cgstAmt.value = roundTo(taxableValue.value*(cgstRate.value)/100, 2);
+    sgstAmt.value = roundTo(taxableValue.value*(sgstRate.value)/100, 2);
+    netAmt.value = roundTo(parseInt(cgstAmt.value) + parseInt(sgstAmt.value) + parseInt(taxableValue.value), 2  );
 }
 
 
@@ -322,16 +389,19 @@ const addSgstItem = () => {
     let newRateCell = document.createElement("td");
     let newRateInput = document.createElement("input");
     newRateInput.setAttribute("type", "text");
-    newRateInput.setAttribute("oninput", `sgstCalculator(${rowId})`);
+    newRateInput.setAttribute("oninput", `setRatePerItem(${rowId}, "sgst")`);
+    newRateInput.setAttribute("onblur", `sgstCalculator(${rowId})`);    
     newRateInput.setAttribute("size", "35");
     newRateInput.className = "form-control";
     newRateCell.appendChild(newRateInput);
 
-
+    // ADDING DISCOUNT FIELD
     let newDiscountCell = document.createElement("td");
     let newDiscountInput = document.createElement("input");
     newDiscountInput.setAttribute("type", "text");
-    newDiscountInput.setAttribute("size", "2");    
+    newDiscountInput.setAttribute("size", "1");
+    newDiscountInput.setAttribute("oninput", `setDiscount(${rowId}, "sgst")`);
+    newDiscountInput.setAttribute("onblur", `sgstCalculator(${rowId})`);
     newDiscountInput.className = "form-control";
     newDiscountCell.appendChild(newDiscountInput);
 
@@ -345,7 +415,7 @@ const addSgstItem = () => {
     let newCgstRateCell = document.createElement("td");
     let newCgstRateInput = document.createElement("input");
     newCgstRateInput.setAttribute("type", "text");
-    newCgstRateInput.setAttribute("size", "15");
+    newCgstRateInput.setAttribute("size", "10");
     newCgstRateInput.setAttribute("oninput", `setTaxRate(${rowId}, 8, "sgst")`);
     newCgstRateInput.setAttribute("onblur", `sgstCalculator(${rowId})`);
     newCgstRateInput.className="form-control";
@@ -437,7 +507,6 @@ const setSgstIds = () => {
 }
 
 
-
 const addIgstItem = () => {
     let id = ++igstSerialNo;
     let tableBody = document.getElementById("igstTableBody");
@@ -463,6 +532,7 @@ const addIgstItem = () => {
     let newHsnInput = document.createElement("input");
     newHsnInput.setAttribute("type", "text");
     newHsnInput.className = "form-control";
+    newHsnInput.setAttribute("size", "30");    
     newHsnCell.appendChild(newHsnInput);
 
     // ADDING QUANTITY FIELD
@@ -470,7 +540,7 @@ const addIgstItem = () => {
     let newQtyInput = document.createElement("input");
     newQtyInput.setAttribute("type", "text");
     newQtyInput.className = "form-control";
-    newQtyInput.setAttribute("size", "10");
+    newQtyInput.setAttribute("size", "30");
     newQtyCell.appendChild(newQtyInput);
 
     // making a drop down
@@ -514,7 +584,8 @@ const addIgstItem = () => {
     let newDiscountCell = document.createElement("td");
     let newDiscountInput = document.createElement("input");
     newDiscountInput.setAttribute("type", "text");
-    newDiscountInput.setAttribute("size", "2")    
+    newDiscountInput.setAttribute("size", "2")  
+    newDiscountInput.setAttribute("oninput", `setDiscount(${rowId}, "igst")`);      
     newDiscountInput.className = "form-control";
     newDiscountCell.appendChild(newDiscountInput);
 
@@ -547,7 +618,7 @@ const addIgstItem = () => {
     let newNetAmtInput = document.createElement("input");
     newNetAmtInput.setAttribute("type", "text");
     newNetAmtInput.className = "form-control";
-    newNetAmtInput.setAttribute("size", "100");
+    newNetAmtInput.setAttribute("size", "90");
     newNetAmtInput.setAttribute("style" , "color:#006400;");
     newNetAmtCell.appendChild(newNetAmtInput);
     newNetAmtCell.setAttribute("colspan", "4");
