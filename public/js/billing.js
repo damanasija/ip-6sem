@@ -1,9 +1,14 @@
 let sgstSerialNo = 0;
 let igstSerialNo = 0;
 let taxRates = null;
-let alphabetsRegex = /[a-z]/gi;
+let nonDecimalRegex = /[^0-9.,]+/g;
+let nonDigitsRegex = /[^0-9]+/g;
 const dangerClass = "alert alert-danger";
 const successClass = "alert alert-success";
+
+document.getElementById("igstTable").style.display = "none";
+document.getElementById("firmState").value = document.getElementById("userState").innerHTML;
+
 
 const displayMessage = (msgString, classValue) => {
     let timeout = 2000;
@@ -11,12 +16,12 @@ const displayMessage = (msgString, classValue) => {
     messageDiv.innerHTML = `<center>${msgString}</center>`;
     messageDiv.className = classValue;
     messageDiv.style.display = "block";
-    window.scrollTo(0, messageDiv.offsetTop);
-    
+    let coords = messageDiv.getBoundingClientRect();
+    window.scrollTo(0, 0);
+    // window.alert(msgString);
     setTimeout(() => {
         messageDiv.style.display = "none";
     }, timeout);
-    
 }
 
 function roundTo(n, digits) {
@@ -43,31 +48,16 @@ const isNullOrUndefined = (reference) => {
     return 0;
 }
 
-document.getElementById("igstTable").style.display = "none";
-document.getElementById("firmState").value = document.getElementById("userState").innerHTML;
-
-const setDiscount = (rowRef, type) => {
-    let discount = rowRef.childNodes[6].firstChild;
-    if(discount.value == "-" || discount.value < 0){
-        discount.value = 0;
-        let msgString = `<strong>Discount</strong> can't be a negative value.
-        (at row: <strong>${rowRef.id.replace(/\w{4}row/g, "")}</strong>)`;
-        displayMessage(msgString, dangerClass);
+const setQty = (rowRef, type) => {
+    let qty = rowRef.childNodes[3].firstChild;
+    if(isNaN(qty.value)){
+        qty.value = qty.value.replace(nonDigitsRegex, "");
+        // let msgString = `<strong>Discount</strong> is a <strong>numeric</strong> value.
+        // (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>`;
+        // displayMessage(msgString, dangerClass);
     }
-    if(discount.value > 100){
-        discount.value = 0;
-        let msgString = `<strong>Discount</strong> can't be greater than <strong>100</strong>.
-        (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>)`;
-        displayMessage(msgString, dangerClass);
-    }
-    if(isNaN(discount.value)){
-        discount.value = discount.value.replace(alphabetsRegex, "");
-        let msgString = `<strong>Discount</strong> is a <strong>numeric</strong> value.
-        (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>`;
-        displayMessage(msgString, dangerClass);
-    }
-    if(discount.value != ""){
-        discount.value = parseInt(discount.value);
+    if(qty.value != ""){
+        qty.value = parseInt(qty.value);
         if(type == "sgst")
             sgstCalculator(rowRef);
         else if(type == "igst")
@@ -76,27 +66,65 @@ const setDiscount = (rowRef, type) => {
     
 }
 
+const setDiscount = (rowRef, type) => {
+    let discount = rowRef.childNodes[6].firstChild;
+    // if(discount.value == "-" || discount.value < 0){
+    //     discount.value = 0;
+    //     // let msgString = `<strong>Discount</strong> can't be a negative value.
+    //     // (at row: <strong>${rowRef.id.replace(/\w{4}row/g, "")}</strong>)`;
+    //     displayMessage(msgString, dangerClass);
+    // }
+    if(discount.value > 100){
+        alert("Discount can't be greater than 100");
+        let val = parseInt(discount.value);
+        discount.value = (val / 10) - (val % 10)/10;
+        // let msgString = `<strong>Discount</strong> can't be greater than <strong>100</strong>.
+        // (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>)`;
+        // displayMessage(msgString, dangerClass);
+    }
+    if(isNaN(discount.value)){
+        discount.value = discount.value.replace(nonDigitsRegex, "");
+        // let msgString = `<strong>Discount</strong> is a <strong>numeric</strong> value.
+        // (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>`;
+        // displayMessage(msgString, dangerClass);
+    }
+    if(discount.value != ""){
+        discount.value = parseInt(discount.value);
+        if(type == "sgst")
+            sgstCalculator(rowRef);
+        else if(type == "igst")
+            igstCalculator(rowRef);
+    }
+}
+
 
 const setTaxRate = (rowRef, index, type) => {
     let taxRate = rowRef.childNodes[index].firstChild;
     if(taxRate.value == "-" || taxRate.value < 0){
         taxRate.value = 0;
-        let msgString = `<strong>Tax Rates</strong> can't be a <strong>negative</strong> value. 
-        (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>)`;
-        displayMessage(msgString, dangerClass);
+        // let msgString = `<strong>Tax Rates</strong> can't be a <strong>negative</strong> value. 
+        // (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>)`;
+        // displayMessage(msgString, dangerClass);
     }
     if(taxRate.value > 30){
-        taxRate.value = 0;
-        let msgString = `<strong>Tax Rates</strong> can't be greater than <strong>30%</strong>.
-        (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>)`;
-        displayMessage(msgString, dangerClass);
+        alert("Tax Rate can't be more than 30%")
+        let val = parseInt(taxRate.value);
+        taxRate.value = (val / 10) - (val % 10)/10;
+        // let msgString = `<strong>Tax Rates</strong> can't be greater than <strong>30%</strong>.
+        // (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>)`;
+        // displayMessage(msgString, dangerClass);
     }
     if(isNaN(taxRate.value)){
-        taxRate.value = taxRate.value.replace(alphabetsRegex, "");
-        let msgString =  `<strong>Tax Rates</strong> are <strong>numeric</strong> values.
-        (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>)`;
-        displayMessage(msgString, dangerClass);
+        if(!isNaN(parseInt('0' + taxRate.value))){
+            console.log("clled");
+            taxRate.value = '0' + taxRate.value;
+        }
+        taxRate.value = taxRate.value.replace(nonDigitsRegex, "");
+        // let msgString =  `<strong>Tax Rates</strong> are <strong>numeric</strong> values.
+        // (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>)`;
+        // displayMessage(msgString, dangerClass);
     }
+
     if(taxRate.value != ""){
         taxRate.value = parseInt(taxRate.value);
         if(type == "sgst")
@@ -107,21 +135,37 @@ const setTaxRate = (rowRef, index, type) => {
 }
 
 const setRatePerItem = (rowRef, type) => {
-    let ratePerItem = rowRef.childNodes[5].firstChild;
+    let ratePerItem = rowRef.childNodes[5].firstChild;    
+    if(isNaN(ratePerItem.value)){
+        // console.log(ratePerItem.value + '0');
+        // if(!isNaN(parseFloat(ratePerItem.value + '0'))){
+        //     console.log("clled2");
+        //     ratePerItem.value = ratePerItem.value + '0';
+            
+        // }
+        // if(belongs to decimal regex){
+                // then parse it to normal
+               // and call sgstCalculator
+        // }
+        ratePerItem.value = ratePerItem.value.replace(nonDigitsRegex, "");
+        // let msgString =  `<strong>Rate per Item</strong> is a <strong>numeric</strong> value.
+        // (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>)`;
+        // displayMessage(msgString, dangerClass);
+    }
+
     if(ratePerItem.value == "-" || ratePerItem.value < 0){
         ratePerItem.value = 0;
-        let msgString = `<strong>Rate Per Item</strong> can't be a <strong>negative</strong> value. 
-        (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>)`;
-        displayMessage(msgString, dangerClass);
+        // let msgString = `<strong>Rate Per Item</strong> can't be a <strong>negative</strong> value. 
+        // (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>)`;
+        // displayMessage(msgString, dangerClass);
     }
-    if(isNaN(ratePerItem.value)){
-        ratePerItem.value = ratePerItem.value.replace(alphabetsRegex, "");
-        let msgString =  `<strong>Rate per Item</strong> is a <strong>numeric</strong> value.
-        (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>)`;
-        displayMessage(msgString, dangerClass);
+    if(ratePerItem.value > 10000000){
+        alert("Can't generate tax on an amount of 10M in one single entity");
+        let val = parseInt(ratePerItem.value);
+        ratePerItem.value = (val / 10) - (val % 10)/10;
     }
     if(ratePerItem.value != ""){
-        ratePerItem.value = parseInt(ratePerItem.value);
+        // ratePerItem.value = parseInt(ratePerItem.value);
         if(type == "sgst")
             sgstCalculator(rowRef);
         else
@@ -129,7 +173,7 @@ const setRatePerItem = (rowRef, type) => {
     }
 }
 
-const sgstCalculator = (rowRef) =>{    
+const sgstCalculator = (rowRef) => {    
     let quantity       = rowRef.childNodes[3].firstChild;
     let ratePerItem    = rowRef.childNodes[5].firstChild;
     let discount       = rowRef.childNodes[6].firstChild;
@@ -346,6 +390,7 @@ const addSgstItem = () => {
     let newHsnCell = document.createElement("td");
     let newHsnInput = document.createElement("input");
     newHsnInput.setAttribute("type", "text");
+    newHsnInput.setAttribute("onblur", `setHsn(${rowId})`);
     newHsnInput.className = "form-control";
     newHsnCell.appendChild(newHsnInput);
 
@@ -353,6 +398,8 @@ const addSgstItem = () => {
     let newQtyCell = document.createElement("td");
     let newQtyInput = document.createElement("input");
     newQtyInput.setAttribute("type", "text");
+    newQtyInput.setAttribute("oninput", `setQty(${rowId}, "sgst")`);
+    newQtyInput.setAttribute("onblur", `sgstCalculator(${rowId})`);
     newQtyInput.className = "form-control";
     newQtyInput.setAttribute("size", "10");
     newQtyCell.appendChild(newQtyInput);
@@ -408,7 +455,8 @@ const addSgstItem = () => {
     let newTaxCell = document.createElement("td");
     let newTaxInput = document.createElement("input");
     newTaxInput.setAttribute("type", "text");
-    newTaxInput.setAttribute("size", "30");    
+    newTaxInput.setAttribute("size", "30");
+    newTaxInput.setAttribute("disabled", true);   
     newTaxInput.className = "form-control";
     newTaxCell.appendChild(newTaxInput);
 
@@ -450,6 +498,7 @@ const addSgstItem = () => {
     let newNetAmtCell = document.createElement("td");
     let newNetAmtInput = document.createElement("input");
     newNetAmtInput.setAttribute("type", "text");
+    newNetAmtInput.setAttribute("disabled", true);
     newNetAmtInput.className = "form-control";
     newNetAmtInput.setAttribute("size", "80");
     newNetAmtInput.setAttribute("style" , "color:#006400;");
@@ -499,10 +548,27 @@ const setSgstIds = () => {
         let rowRef = `sgstrow${i + 1}`;
         sgstTableBody.childNodes[i].id = rowRef;
         sgstTableBody.childNodes[i].childNodes[0].innerText = i + 1;
-        sgstTableBody.childNodes[i].childNodes[13].firstChild.setAttribute('onclick', `deleteSgstItem(${rowRef})`);
-        sgstTableBody.childNodes[i].childNodes[5].firstChild.setAttribute('oninput', `sgstCalculator(${rowRef})`);
+        sgstTableBody.childNodes[i].childNodes[2].setAttribute('onblur', `setHsn(${rowRef})`);
+
+        // FOR QUANITITY CELLS
+        sgstTableBody.childNodes[i].childNodes[3].firstChild.setAttribute('oninput', `setQty(${rowRef}, "sgst")`);
+        sgstTableBody.childNodes[i].childNodes[3].firstChild.setAttribute('onblur', `sgstCalculator(${rowRef})`);
+
+        // FOR RATE PER ITEM CELLS
+        sgstTableBody.childNodes[i].childNodes[5].firstChild.setAttribute('oninput', `setRatePerItem(${rowRef}, "sgst")`);
+        sgstTableBody.childNodes[i].childNodes[5].firstChild.setAttribute('onblur', `sgstCalculator(${rowRef})`);
+
+        // FOR DISCOUNT CELLS
+        sgstTableBody.childNodes[i].childNodes[6].firstChild.setAttribute('oninput', `setDiscount(${rowRef}, "sgst")`);
+        sgstTableBody.childNodes[i].childNodes[6].firstChild.setAttribute('onblur', `sgstCalculator(${rowRef})`);
+
+        // FOR CGST TAX CELLS
         sgstTableBody.childNodes[i].childNodes[8].firstChild.setAttribute('oninput', `setTaxRate(${rowRef}, 8, "sgst")`);
-        sgstTableBody.childNodes[i].childNodes[8].firstChild.setAttribute('onblur', `sgstCalculator(${rowRef})`);        
+        sgstTableBody.childNodes[i].childNodes[8].firstChild.setAttribute('onblur', `sgstCalculator(${rowRef})`);
+
+        // FOR DELETE CELLS
+        sgstTableBody.childNodes[i].childNodes[13].firstChild.setAttribute('onclick', `deleteSgstItem(${rowRef})`);
+           
     }
 }
 
@@ -593,6 +659,7 @@ const addIgstItem = () => {
     let newTaxInput = document.createElement("input");
     newTaxInput.setAttribute("type", "text");
     newTaxInput.setAttribute("size", "30");
+    newTaxInput.setAttribute("disabled", true);       
     newTaxInput.className = "form-control";
     newTaxCell.appendChild(newTaxInput);
 
@@ -664,6 +731,8 @@ const setIgstIds = () => {
         let rowRef = `igstrow${i + 1}`;
         igstTableBody.childNodes[i].id = rowRef;
         igstTableBody.childNodes[i].childNodes[0].innerText = i + 1;
+
+
         igstTableBody.childNodes[i].childNodes[13].firstChild.setAttribute('onclick', `deleteIgstItem(${rowRef})`);
         igstTableBody.childNodes[i].childNodes[5].firstChild.setAttribute('oninput', `igstCalculator(${rowRef})`);
         igstTableBody.childNodes[i].childNodes[8].firstChild.setAttribute('oninput', `setTaxRate(${rowRef}, 8, "igst")`);

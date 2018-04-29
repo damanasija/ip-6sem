@@ -187,6 +187,11 @@ app.get("/login", (req, res) => {
     res.render("login");
 });
 
+app.post("/login", (req, res) => {
+    console.log(req.body);
+    res.redirect("/login");
+});
+
 app.get("/bills/new", (req, res) => {
     invoiceNo = Date + "0001";
     res.render("newBill",{user: user, states: states, invoiceNo: invoiceNo});

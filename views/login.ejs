@@ -1,9 +1,16 @@
 <% include ./partials/header%>
 <%include ./navbar %>
+
+<style>
+  div#message{
+    display: none;
+  }
+</style>
+
 <h1 class="jumbotron text-center">Login</h1>
 
 <div class="container center-block">
-  <form action="#" method="post">
+  <form method="POST" action="/login" onsubmit="return validateForm()">
 
 
     <div class="center-block">
@@ -15,14 +22,15 @@
         <div class="form-group">
 
           <label for="username">Username</label>
-          <input type="text" name="username" class="form-control" id="username" placeholder="Username" required>
+          <input type="text" name="username" class="form-control" id="username" placeholder="Username">
         </div>
 
         <div class="form-group">
-          <label for="pass">Password</label>
-          <input type="password" name="password" class="form-control" id="pass" placeholder="Password" required>
+          <label for="password">Password</label>
+          <input type="password" name="password" class="form-control" id="password" placeholder="Password">
         </div>
         <input type="submit" class="btn btn-success" value="Submit">
+        <div id="message" class="alert alert-danger text-center"></div>
       </div>
     </div>
 
@@ -33,9 +41,40 @@
       <label for="logo">Choose Company Logo</label>
       <input type="file" name="logo" id="logo">
     </div> -->
-
   </form>
 </div>
+<script>
+  const displayError = (message) => {
+    let messageDiv = document.getElementById("message");
+    messageDiv.innerHTML = message;
+    messageDiv.style.display = "block";
+    setTimeout(() => {
+      messageDiv.style.display = "none";      
+    }, 2000);
+  }
+  function validateForm () {
+    let messageDiv = document.getElementById("message");
+    let username = document.getElementById("username");
+    let password = document.getElementById("password");
+    if((username.value == "") && (password.value == "")){
+      displayError("<strong>All fields are required.</strong>");
+      return false;
+    }
+    if (username.value == "") {
+      displayError("Username is empty.")
+      return false;
+    }
+    if (username.value.length < 4) {
+      displayError("<strong>Username</strong> is short!");
+      return false;
+    }
+    if (password.value == "") {
+      displayError("<strong>Password</strong> field is empty!");
+      return false;
+    }
+    return true;
+  }
+</script>
 
 
 <% include ./partials/footer%>
