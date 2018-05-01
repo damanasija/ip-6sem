@@ -1,5 +1,13 @@
 <% include ./partials/header.ejs %>
 <% include ./navbar.ejs %>
+<style>
+    .totals>td{
+        padding-bottom: 0.5em;
+    }
+    .space{
+        margin: 1em 0em 1em 0em;
+    }
+</style>
 <hr>
 <div class="row">
     <div class="col-md-6">
@@ -97,7 +105,7 @@
                 </div>
                 <strong class="col-md-2">Country:</strong>
                 <div class="col-md-2">
-                    <input type="text" class="form-control input-sm" id="firmCountry" placeholder="Country">                    
+                    <input type="text" class="form-control input-sm" id="firmCountry" value="INDIA" placeholder="Country" disabled="true">                    
                 </div>
             </div>
         </div>
@@ -138,6 +146,25 @@
                 </thead>
                 <tbody id="sgstTableBody"></tbody>
             </table>
+            <div class="row">
+                <div class="col-md-8"></div>
+                <div class="col-md-4 bg-success">
+                    <table class="space">
+                        <tr class="totals">
+                            <td><strong>Total Taxable Amount (&#x20b9;) :</strong></td>
+                            <td><input type="text" id="sgstTotalTaxable" class="btn btn-default" disabled></td>
+                        </tr>
+                        <tr class="totals">
+                            <td><strong>Total Tax (&#x20b9;) :</strong></td>
+                            <td><input type="text" id="sgstTotalTax" class="btn btn-default" disabled></td>
+                        </tr>
+                        <tr class="totals">
+                            <td><strong>Invoice Total (&#x20b9;) :</strong></td>
+                            <td><input type="text" id="sgstInvoiceTotal" class="btn btn-default" disabled></td>                            
+                        </tr>
+                    </table>
+                </div>
+            </div>
         </div>
         <div class="col-md-1">
             <button class="btn btn-primary" onclick="addSgstItem()">Add Item</button>
@@ -175,6 +202,25 @@
                 </thead>
                 <tbody id="igstTableBody"></tbody>
             </table>
+            <div class="row">
+                <div class="col-md-8"></div>
+                <div class="col-md-4 bg-success">
+                    <table class="space">
+                        <tr class="totals">
+                            <td><strong>Total Taxable Amount (&#x20b9;) :</strong></td>
+                            <td><input type="text" id="igstTotalTaxable" class="btn btn-default" disabled></td>
+                        </tr>
+                        <tr class="totals">
+                            <td><strong>Total Tax (&#x20b9;) :</strong></td>
+                            <td><input type="text" id="igstTotalTax" class="btn btn-default" disabled></td>
+                        </tr>
+                        <tr class="totals">
+                            <td><strong>Invoice Total (&#x20b9;) :</strong></td>
+                            <td><input type="text" id="igstInvoiceTotal" class="btn btn-default" disabled></td>                            
+                        </tr>
+                    </table>
+                </div>
+            </div>
         </div>
         <div class="col-md-1">
                 <button class="btn btn-primary" onclick="addIgstItem()">Add Item</button>

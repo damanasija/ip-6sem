@@ -1,224 +1,12 @@
+document.getElementById("igstTable").style.display = "none";
+document.getElementById("firmState").value = document.getElementById("userState").innerHTML;
 let sgstSerialNo = 0;
 let igstSerialNo = 0;
 let taxRates = null;
-let nonDecimalRegex = /[^0-9.,]+/g;
-let nonDigitsRegex = /[^0-9]+/g;
+let nonDigitsRegex = /[^0-9.]/g;
+// let nonDigitsRegex = /[^0-9]+/g;
 const dangerClass = "alert alert-danger";
 const successClass = "alert alert-success";
-
-document.getElementById("igstTable").style.display = "none";
-document.getElementById("firmState").value = document.getElementById("userState").innerHTML;
-
-
-const displayMessage = (msgString, classValue) => {
-    let timeout = 2000;
-    let messageDiv = document.getElementById("message");
-    messageDiv.innerHTML = `<center>${msgString}</center>`;
-    messageDiv.className = classValue;
-    messageDiv.style.display = "block";
-    let coords = messageDiv.getBoundingClientRect();
-    window.scrollTo(0, 0);
-    // window.alert(msgString);
-    setTimeout(() => {
-        messageDiv.style.display = "none";
-    }, timeout);
-}
-
-function roundTo(n, digits) {
-    var negative = false;
-    if (digits === undefined) {
-        digits = 0;
-    }
-        if( n < 0) {
-        negative = true;
-      n = n * -1;
-    }
-    var multiplicator = Math.pow(10, digits);
-    n = parseFloat((n * multiplicator).toFixed(11));
-    n = (Math.round(n) / multiplicator).toFixed(2);
-    if( negative ) {    
-        n = (n * -1).toFixed(2);
-    }
-    return n;
-}
-
-const isNullOrUndefined = (reference) => {
-    if(reference === undefined || reference === null)
-        return 1;
-    return 0;
-}
-
-const setQty = (rowRef, type) => {
-    let qty = rowRef.childNodes[3].firstChild;
-    if(isNaN(qty.value)){
-        qty.value = qty.value.replace(nonDigitsRegex, "");
-        // let msgString = `<strong>Discount</strong> is a <strong>numeric</strong> value.
-        // (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>`;
-        // displayMessage(msgString, dangerClass);
-    }
-    if(qty.value != ""){
-        qty.value = parseInt(qty.value);
-        if(type == "sgst")
-            sgstCalculator(rowRef);
-        else if(type == "igst")
-            igstCalculator(rowRef);
-    }
-    
-}
-
-const setDiscount = (rowRef, type) => {
-    let discount = rowRef.childNodes[6].firstChild;
-    // if(discount.value == "-" || discount.value < 0){
-    //     discount.value = 0;
-    //     // let msgString = `<strong>Discount</strong> can't be a negative value.
-    //     // (at row: <strong>${rowRef.id.replace(/\w{4}row/g, "")}</strong>)`;
-    //     displayMessage(msgString, dangerClass);
-    // }
-    if(discount.value > 100){
-        alert("Discount can't be greater than 100");
-        let val = parseInt(discount.value);
-        discount.value = (val / 10) - (val % 10)/10;
-        // let msgString = `<strong>Discount</strong> can't be greater than <strong>100</strong>.
-        // (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>)`;
-        // displayMessage(msgString, dangerClass);
-    }
-    if(isNaN(discount.value)){
-        discount.value = discount.value.replace(nonDigitsRegex, "");
-        // let msgString = `<strong>Discount</strong> is a <strong>numeric</strong> value.
-        // (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>`;
-        // displayMessage(msgString, dangerClass);
-    }
-    if(discount.value != ""){
-        discount.value = parseInt(discount.value);
-        if(type == "sgst")
-            sgstCalculator(rowRef);
-        else if(type == "igst")
-            igstCalculator(rowRef);
-    }
-}
-
-
-const setTaxRate = (rowRef, index, type) => {
-    let taxRate = rowRef.childNodes[index].firstChild;
-    if(taxRate.value == "-" || taxRate.value < 0){
-        taxRate.value = 0;
-        // let msgString = `<strong>Tax Rates</strong> can't be a <strong>negative</strong> value. 
-        // (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>)`;
-        // displayMessage(msgString, dangerClass);
-    }
-    if(taxRate.value > 30){
-        alert("Tax Rate can't be more than 30%")
-        let val = parseInt(taxRate.value);
-        taxRate.value = (val / 10) - (val % 10)/10;
-        // let msgString = `<strong>Tax Rates</strong> can't be greater than <strong>30%</strong>.
-        // (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>)`;
-        // displayMessage(msgString, dangerClass);
-    }
-    if(isNaN(taxRate.value)){
-        if(!isNaN(parseInt('0' + taxRate.value))){
-            console.log("clled");
-            taxRate.value = '0' + taxRate.value;
-        }
-        taxRate.value = taxRate.value.replace(nonDigitsRegex, "");
-        // let msgString =  `<strong>Tax Rates</strong> are <strong>numeric</strong> values.
-        // (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>)`;
-        // displayMessage(msgString, dangerClass);
-    }
-
-    if(taxRate.value != ""){
-        taxRate.value = parseInt(taxRate.value);
-        if(type == "sgst")
-            sgstCalculator(rowRef);
-        else
-            igstCalculator(rowRef);
-    }
-}
-
-const setRatePerItem = (rowRef, type) => {
-    let ratePerItem = rowRef.childNodes[5].firstChild;    
-    if(isNaN(ratePerItem.value)){
-        // console.log(ratePerItem.value + '0');
-        // if(!isNaN(parseFloat(ratePerItem.value + '0'))){
-        //     console.log("clled2");
-        //     ratePerItem.value = ratePerItem.value + '0';
-            
-        // }
-        // if(belongs to decimal regex){
-                // then parse it to normal
-               // and call sgstCalculator
-        // }
-        ratePerItem.value = ratePerItem.value.replace(nonDigitsRegex, "");
-        // let msgString =  `<strong>Rate per Item</strong> is a <strong>numeric</strong> value.
-        // (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>)`;
-        // displayMessage(msgString, dangerClass);
-    }
-
-    if(ratePerItem.value == "-" || ratePerItem.value < 0){
-        ratePerItem.value = 0;
-        // let msgString = `<strong>Rate Per Item</strong> can't be a <strong>negative</strong> value. 
-        // (at row: <strong>${rowRef.id.replace(/\w{4}row/g,"")}</strong>)`;
-        // displayMessage(msgString, dangerClass);
-    }
-    if(ratePerItem.value > 10000000){
-        alert("Can't generate tax on an amount of 10M in one single entity");
-        let val = parseInt(ratePerItem.value);
-        ratePerItem.value = (val / 10) - (val % 10)/10;
-    }
-    if(ratePerItem.value != ""){
-        // ratePerItem.value = parseInt(ratePerItem.value);
-        if(type == "sgst")
-            sgstCalculator(rowRef);
-        else
-            igstCalculator(rowRef);
-    }
-}
-
-const sgstCalculator = (rowRef) => {    
-    let quantity       = rowRef.childNodes[3].firstChild;
-    let ratePerItem    = rowRef.childNodes[5].firstChild;
-    let discount       = rowRef.childNodes[6].firstChild;
-    let taxableValue   = rowRef.childNodes[7].firstChild;
-    let cgstRate       = rowRef.childNodes[8].firstChild;
-    let cgstAmt        = rowRef.childNodes[9].firstChild;
-    let sgstRate       = rowRef.childNodes[10].firstChild;
-    let sgstAmt        = rowRef.childNodes[11].firstChild;
-    let netAmt         = rowRef.childNodes[12].firstChild;
-
-    //check valid rate item
-
-
-    // Default values for each field
-    if(quantity.value == "")
-        quantity.value = 1;
-    if(discount.value == "")
-        discount.value = 0;
-    if(cgstRate.value == "")
-        cgstRate.value = 0;
-    if(ratePerItem.value == "")
-        ratePerItem.value = 0;
-    sgstRate.value = cgstRate.value;
-
-
-    taxableValue.value = roundTo(quantity.value * (ratePerItem.value * (1 - discount.value/100 )), 2);
-    cgstAmt.value = roundTo(taxableValue.value*(cgstRate.value)/100, 2);
-    sgstAmt.value = roundTo(taxableValue.value*(sgstRate.value)/100, 2);
-    netAmt.value = roundTo(parseInt(cgstAmt.value) + parseInt(sgstAmt.value) + parseInt(taxableValue.value), 2  );
-}
-
-
-const billSelector = () =>{
-    userState = document.getElementById("userState").innerHTML;
-    firmState = document.getElementById("firmState").value;
-    if(userState != firmState){
-        document.getElementById("sgstTable").style.display = "none";
-        document.getElementById("igstTable").style.display = "block";
-    }
-    else{
-        document.getElementById("sgstTable").style.display = "block";
-        document.getElementById("igstTable").style.display = "none";
-    }
-}
-
 const states = [
     {
         "key": "AN",
@@ -365,6 +153,189 @@ const states = [
         "name": "WEST BENGAL"
     }
 ];
+
+const displayMessage = (msgString, classValue) => {
+    let timeout = 2000;
+    let messageDiv = document.getElementById("message");
+    messageDiv.innerHTML = `<center>${msgString}</center>`;
+    messageDiv.className = classValue;
+    messageDiv.style.display = "block";
+    let coords = messageDiv.getBoundingClientRect();
+    window.scrollTo(0, 0);
+    // window.alert(msgString);
+    setTimeout(() => {
+        messageDiv.style.display = "none";
+    }, timeout);
+}
+
+function roundTo(n, digits) {
+    var negative = false;
+    if (digits === undefined) {
+        digits = 0;
+    }
+        if( n < 0) {
+        negative = true;
+      n = n * -1;
+    }
+    var multiplicator = Math.pow(10, digits);
+    n = parseFloat((n * multiplicator).toFixed(11));
+    n = (Math.round(n) / multiplicator).toFixed(2);
+    if( negative ) {    
+        n = (n * -1).toFixed(2);
+    }
+    return n;
+}
+
+const isNullOrUndefined = (reference) => {
+    if(reference === undefined || reference === null)
+        return 1;
+    return 0;
+}
+
+const setQty = (rowRef, type) => {
+    let qty = rowRef.childNodes[3].firstChild;
+    if(isNaN(qty.value)){
+        qty.value = qty.value.replace(nonDigitsRegex, "");
+    }
+    if(qty.value != ""){
+        qty.value = parseInt(qty.value);
+        if(type == "sgst")
+            sgstCalculator(rowRef);
+        else if(type == "igst")
+            igstCalculator(rowRef);
+    }
+    
+}
+
+const setDiscount = (rowRef, type) => {
+    let discount = rowRef.childNodes[6].firstChild;
+    if(isNaN(discount.value)){
+        discount.value = discount.value.replace(nonDigitsRegex, "");
+    }
+    if(discount.value > 100){
+        alert("Discount can't be greater than 100");
+        let val = parseInt(discount.value);
+        discount.value = (val / 10) - (val % 10)/10;
+    }
+    if(discount.value != ""){
+        if(type == "sgst")
+            sgstCalculator(rowRef);
+        else if(type == "igst")
+            igstCalculator(rowRef);
+    }
+}
+
+
+const setTaxRate = (rowRef, index, type) => {
+    let taxRate = rowRef.childNodes[index].firstChild;
+    if(taxRate.value == "-" || taxRate.value < 0){
+        taxRate.value = 0;
+    }
+    if(taxRate.value > 30){
+        alert("Tax Rate (CGST) can't be more than 15% as Total tax (CGST + SGST) can't be greater than 30 %")
+        let val = parseInt(taxRate.value);
+        taxRate.value = (val / 10) - (val % 10)/10;
+    }
+    if(isNaN(taxRate.value)){
+        taxRate.value = taxRate.value.replace(nonDigitsRegex, "");
+    }
+
+    if(taxRate.value != ""){
+        if(type == "sgst")
+            sgstCalculator(rowRef);
+        else
+            igstCalculator(rowRef);
+    }
+}
+
+const setRatePerItem = (rowRef, type) => {
+    let ratePerItem = rowRef.childNodes[5].firstChild;    
+    if(isNaN(ratePerItem.value)){
+        ratePerItem.value = ratePerItem.value.replace(nonDigitsRegex, "");
+    }
+
+    if(ratePerItem.value == "-" || ratePerItem.value < 0){
+        ratePerItem.value = 0;
+    }
+    if(ratePerItem.value > 10000000){
+        alert("Can't generate tax on an amount of 10M in one single entity");
+        let val = parseInt(ratePerItem.value);
+        ratePerItem.value = (val / 10) - (val % 10)/10;
+    }
+    if(ratePerItem.value != ""){
+        if(type == "sgst")
+            sgstCalculator(rowRef);
+        else
+            igstCalculator(rowRef);
+    }
+}
+
+const sgstCalculator = (rowRef) => {    
+    let quantity       = rowRef.childNodes[3].firstChild;
+    let ratePerItem    = rowRef.childNodes[5].firstChild;
+    let discount       = rowRef.childNodes[6].firstChild;
+    let taxableValue   = rowRef.childNodes[7].firstChild;
+    let cgstRate       = rowRef.childNodes[8].firstChild;
+    let cgstAmt        = rowRef.childNodes[9].firstChild;
+    let sgstRate       = rowRef.childNodes[10].firstChild;
+    let sgstAmt        = rowRef.childNodes[11].firstChild;
+    let netAmt         = rowRef.childNodes[12].firstChild;
+
+
+    // Default values for each field
+    if(quantity.value == "")
+        quantity.value = 1;
+    if(discount.value == "")
+        discount.value = 0;
+    if(cgstRate.value == "")
+        cgstRate.value = 0;
+    if(ratePerItem.value == "")
+        ratePerItem.value = 0;
+
+    sgstRate.value = cgstRate.value;
+
+    taxableValue.value = roundTo(quantity.value * (ratePerItem.value * (1 - discount.value/100 )), 2);
+    cgstAmt.value = roundTo(taxableValue.value*(cgstRate.value)/100, 2);
+    sgstAmt.value = roundTo(taxableValue.value*(sgstRate.value)/100, 2);
+    netAmt.value = roundTo(parseFloat(cgstAmt.value) + parseFloat(sgstAmt.value) + parseFloat(taxableValue.value), 2 );
+    populateSgstValues();
+}
+
+const populateSgstValues = () => {
+    let table = document.getElementById("sgstTableBody");
+    let taxableTotal = document.getElementById("sgstTotalTaxable");
+    let taxTotal = document.getElementById("sgstTotalTax");
+    let invoiceTotal = document.getElementById("sgstInvoiceTotal");
+    let totalGross = 0;
+    let totalTax = 0;
+    let totalNet = 0;
+
+    for(let i = 0; i < table.childElementCount; i++){
+        let row = table.childNodes[i];
+        if(row.childNodes[7].firstChild.value !=  "")
+            totalGross += parseFloat(row.childNodes[7].firstChild.value);
+        if(row.childNodes[8].firstChild.value != "")
+            totalTax += parseFloat(row.childNodes[9].firstChild.value);
+        if(row.childNodes[12].firstChild.value != "")
+            totalNet += parseFloat(row.childNodes[12].firstChild.value);
+    }
+    taxableTotal.value = totalGross;
+    taxTotal.value = totalTax*2;
+    invoiceTotal.value = totalNet;
+}
+
+const billSelector = () =>{
+    userState = document.getElementById("userState").innerHTML;
+    firmState = document.getElementById("firmState").value;
+    if(userState != firmState){
+        document.getElementById("sgstTable").style.display = "none";
+        document.getElementById("igstTable").style.display = "block";
+    }
+    else{
+        document.getElementById("sgstTable").style.display = "block";
+        document.getElementById("igstTable").style.display = "none";
+    }
+}
 
 const addSgstItem = () => {
     let id = ++sgstSerialNo;
@@ -548,7 +519,7 @@ const setSgstIds = () => {
         let rowRef = `sgstrow${i + 1}`;
         sgstTableBody.childNodes[i].id = rowRef;
         sgstTableBody.childNodes[i].childNodes[0].innerText = i + 1;
-        sgstTableBody.childNodes[i].childNodes[2].setAttribute('onblur', `setHsn(${rowRef})`);
+        sgstTableBody.childNodes[i].childNodes[2].firstChild.setAttribute('onblur', `setHsn(${rowRef})`);
 
         // FOR QUANITITY CELLS
         sgstTableBody.childNodes[i].childNodes[3].firstChild.setAttribute('oninput', `setQty(${rowRef}, "sgst")`);
