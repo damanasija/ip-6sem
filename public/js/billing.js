@@ -543,6 +543,27 @@ const setSgstIds = () => {
     }
 }
 
+const generateSgstBill = () =>{
+    let user = {
+        company_name: document.getElementById("userCompanyName").innerHTML,
+        gstin: document.getElementById("userGSTIN").innerHTML,
+        city: document.getElementById("userCity").innerHTML,
+        pin: document.getElementById("userPin").innerHTML,
+        state: document.getElementById("userState").innerHTML,
+        country: document.getElementById("userCountry").innerHTML
+    }
+    let invoice = {
+        type: "Intra-state",
+        no: document.getElementById("invoiceNo").value,
+    }
+    let items = [];
+    let table = document.getElementById("sgstTableBody");
+    for(let i = 0; i < table.childElementCount; i++) {
+        let row = table.childNodes[i];
+        let item = {};
+        row["sr"] = document.getElementById
+    }
+}
 
 const addIgstItem = () => {
     let id = ++igstSerialNo;
