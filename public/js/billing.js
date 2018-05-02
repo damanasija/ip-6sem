@@ -1,5 +1,9 @@
+/*-------------------------------------------------------------------------------------------
+|               Constants and initial statements necessary for table selection               |
+--------------------------------------------------------------------------------------------*/
+
 document.getElementById("igstTable").style.display = "none";
-document.getElementById("firmState").value = document.getElementById("userState").innerHTML;
+document.getElementById("recieverState").value = document.getElementById("userState").innerHTML;
 let sgstSerialNo = 0;
 let igstSerialNo = 0;
 let taxRates = null;
@@ -154,6 +158,9 @@ const states = [
     }
 ];
 
+/*-----------------------------------------------------------------------
+|               Generic Functions(Not related to billing)               |
+-----------------------------------------------------------------------*/
 const displayMessage = (msgString, classValue) => {
     let timeout = 2000;
     let messageDiv = document.getElementById("message");
@@ -192,6 +199,30 @@ const isNullOrUndefined = (reference) => {
     return 0;
 }
 
+/*-----------------------------------------------------------------------
+|           Generic Functions(Related to billing)                       |
+-----------------------------------------------------------------------*/
+
+const billSelector = () =>{
+    userState = document.getElementById("userState").innerHTML;
+    recieverState = document.getElementById("recieverState").value;
+    if(userState != recieverState){
+        document.getElementById("sgstTable").style.display = "none";
+        document.getElementById("igstTable").style.display = "block";
+    }
+    else{
+        document.getElementById("sgstTable").style.display = "block";
+        document.getElementById("igstTable").style.display = "none";
+    }
+}
+
+const setHsn = (rowRef) => {
+    let hsn = rowRef.childNodes[2].firstChild;
+    if(!((hsn.value == "") || (hsn.value.length == 2) || (hsn.value.length == 4) || (hsn.value.length == 8))){
+        alert("Invalid HSN code.");
+    }
+}
+
 const setQty = (rowRef, type) => {
     let qty = rowRef.childNodes[3].firstChild;
     if(isNaN(qty.value)){
@@ -225,21 +256,28 @@ const setDiscount = (rowRef, type) => {
     }
 }
 
-
 const setTaxRate = (rowRef, index, type) => {
     let taxRate = rowRef.childNodes[index].firstChild;
     if(taxRate.value == "-" || taxRate.value < 0){
         taxRate.value = 0;
     }
-    if(taxRate.value > 30){
-        alert("Tax Rate (CGST) can't be more than 15% as Total tax (CGST + SGST) can't be greater than 30 %")
-        let val = parseInt(taxRate.value);
-        taxRate.value = (val / 10) - (val % 10)/10;
+    let maxTaxRate = 0;
+    if(type == "cgst" || type == "sgst") {
+        if(taxRate.value > 15){
+            alert("Tax Rate (CGST) can't be more than 15% as Total tax (CGST + SGST) can't be greater than 30%.")
+            let val = parseInt(taxRate.value);
+            taxRate.value = (val / 10) - (val % 10)/10;
+        }
+    } else {
+        if(taxRate.value > 30){
+            alert("Tax Rate (IGST) can't be more than 30%.")
+            let val = parseInt(taxRate.value);
+            taxRate.value = (val / 10) - (val % 10)/10;
+        }
     }
     if(isNaN(taxRate.value)){
         taxRate.value = taxRate.value.replace(nonDigitsRegex, "");
     }
-
     if(taxRate.value != ""){
         if(type == "sgst")
             sgstCalculator(rowRef);
@@ -270,72 +308,29 @@ const setRatePerItem = (rowRef, type) => {
     }
 }
 
-const sgstCalculator = (rowRef) => {    
-    let quantity       = rowRef.childNodes[3].firstChild;
-    let ratePerItem    = rowRef.childNodes[5].firstChild;
-    let discount       = rowRef.childNodes[6].firstChild;
-    let taxableValue   = rowRef.childNodes[7].firstChild;
-    let cgstRate       = rowRef.childNodes[8].firstChild;
-    let cgstAmt        = rowRef.childNodes[9].firstChild;
-    let sgstRate       = rowRef.childNodes[10].firstChild;
-    let sgstAmt        = rowRef.childNodes[11].firstChild;
-    let netAmt         = rowRef.childNodes[12].firstChild;
-
-
-    // Default values for each field
-    if(quantity.value == "")
-        quantity.value = 1;
-    if(discount.value == "")
-        discount.value = 0;
-    if(cgstRate.value == "")
-        cgstRate.value = 0;
-    if(ratePerItem.value == "")
-        ratePerItem.value = 0;
-
-    sgstRate.value = cgstRate.value;
-
-    taxableValue.value = roundTo(quantity.value * (ratePerItem.value * (1 - discount.value/100 )), 2);
-    cgstAmt.value = roundTo(taxableValue.value*(cgstRate.value)/100, 2);
-    sgstAmt.value = roundTo(taxableValue.value*(sgstRate.value)/100, 2);
-    netAmt.value = roundTo(parseFloat(cgstAmt.value) + parseFloat(sgstAmt.value) + parseFloat(taxableValue.value), 2 );
-    populateSgstValues();
+const isValidBuyer = () => {
+    let recieverName = document.getElementById("recieverName")
 }
 
-const populateSgstValues = () => {
-    let table = document.getElementById("sgstTableBody");
-    let taxableTotal = document.getElementById("sgstTotalTaxable");
-    let taxTotal = document.getElementById("sgstTotalTax");
-    let invoiceTotal = document.getElementById("sgstInvoiceTotal");
-    let totalGross = 0;
-    let totalTax = 0;
-    let totalNet = 0;
-
-    for(let i = 0; i < table.childElementCount; i++){
-        let row = table.childNodes[i];
-        if(row.childNodes[7].firstChild.value !=  "")
-            totalGross += parseFloat(row.childNodes[7].firstChild.value);
-        if(row.childNodes[8].firstChild.value != "")
-            totalTax += parseFloat(row.childNodes[9].firstChild.value);
-        if(row.childNodes[12].firstChild.value != "")
-            totalNet += parseFloat(row.childNodes[12].firstChild.value);
+const sendToServer = (billObject) => {
+    let bill = JSON.stringify(billObject);
+    xhr = new XMLHttpRequest();
+    xhr.open("POST", "/bills", true);
+    xhr.setRequestHeader("Content-type", "application/json");
+    xhr.onload = function() {
+        if(this.status == 200){
+            if(this.responseText == "OK"){
+                alert("Bill submitted to server");
+            }
+        }
     }
-    taxableTotal.value = totalGross;
-    taxTotal.value = totalTax*2;
-    invoiceTotal.value = totalNet;
+    xhr.send(bill);
 }
 
-const billSelector = () =>{
-    userState = document.getElementById("userState").innerHTML;
-    firmState = document.getElementById("firmState").value;
-    if(userState != firmState){
-        document.getElementById("sgstTable").style.display = "none";
-        document.getElementById("igstTable").style.display = "block";
-    }
-    else{
-        document.getElementById("sgstTable").style.display = "block";
-        document.getElementById("igstTable").style.display = "none";
-    }
-}
+
+/*--------------------------------------------------------------------------------
+|           Functions for CGST + SGST calculation, updation and deletion         |
+--------------------------------------------------------------------------------*/
 
 const addSgstItem = () => {
     let id = ++sgstSerialNo;
@@ -543,27 +538,114 @@ const setSgstIds = () => {
     }
 }
 
+const sgstCalculator = (rowRef) => {    
+    let quantity       = rowRef.childNodes[3].firstChild;
+    let ratePerItem    = rowRef.childNodes[5].firstChild;
+    let discount       = rowRef.childNodes[6].firstChild;
+    let taxableValue   = rowRef.childNodes[7].firstChild;
+    let cgstRate       = rowRef.childNodes[8].firstChild;
+    let cgstAmt        = rowRef.childNodes[9].firstChild;
+    let sgstRate       = rowRef.childNodes[10].firstChild;
+    let sgstAmt        = rowRef.childNodes[11].firstChild;
+    let netAmt         = rowRef.childNodes[12].firstChild;
+
+    // Default values for each field
+    if(quantity.value == "")
+        quantity.value = 1;
+    if(discount.value == "")
+        discount.value = 0;
+    if(cgstRate.value == "")
+        cgstRate.value = 0;
+    if(ratePerItem.value == "")
+        ratePerItem.value = 0;
+
+    sgstRate.value = cgstRate.value;
+
+    taxableValue.value = roundTo(quantity.value * (ratePerItem.value * (1 - discount.value/100 )), 2);
+    cgstAmt.value = roundTo(taxableValue.value*(cgstRate.value)/100, 2);
+    sgstAmt.value = roundTo(taxableValue.value*(sgstRate.value)/100, 2);
+    netAmt.value = roundTo(parseFloat(cgstAmt.value) + parseFloat(sgstAmt.value) + parseFloat(taxableValue.value), 2 );
+    populateSgstValues();
+}
+
+const populateSgstValues = () => {
+    let table = document.getElementById("sgstTableBody");
+    let taxableTotal = document.getElementById("sgstTotalTaxable");
+    let taxTotal = document.getElementById("sgstTotalTax");
+    let invoiceTotal = document.getElementById("sgstInvoiceTotal");
+    let totalGross = 0;
+    let totalTax = 0;
+    let totalNet = 0;
+
+    for(let i = 0; i < table.childElementCount; i++){
+        let row = table.childNodes[i];
+        if(row.childNodes[7].firstChild.value !=  "")
+            totalGross += parseFloat(row.childNodes[7].firstChild.value);
+        if(row.childNodes[8].firstChild.value != "")
+            totalTax += parseFloat(row.childNodes[9].firstChild.value);
+        if(row.childNodes[12].firstChild.value != "")
+            totalNet += parseFloat(row.childNodes[12].firstChild.value);
+    }
+    taxableTotal.value = totalGross;
+    taxTotal.value = totalTax*2;
+    invoiceTotal.value = totalNet;
+}
+
+
 const generateSgstBill = () =>{
+    // VALIDATE ALL FIELDS
+    if(!isSgstValid()){
+
+    }
     let user = {
         company_name: document.getElementById("userCompanyName").innerHTML,
-        gstin: document.getElementById("userGSTIN").innerHTML,
+        gstin: document.getElementById("userGstin").innerHTML,
         city: document.getElementById("userCity").innerHTML,
         pin: document.getElementById("userPin").innerHTML,
         state: document.getElementById("userState").innerHTML,
         country: document.getElementById("userCountry").innerHTML
     }
+    // INVOICE DATES AND TIMES ARE ADDED VIA SERVER
     let invoice = {
-        type: "Intra-state",
-        no: document.getElementById("invoiceNo").value,
+        type: "intra-state",
     }
     let items = [];
     let table = document.getElementById("sgstTableBody");
     for(let i = 0; i < table.childElementCount; i++) {
         let row = table.childNodes[i];
         let item = {};
-        row["sr"] = document.getElementById
+        item["sr"] = row.childNodes[0].innerHTML;
+        item["description"] = row.childNodes[1].firstChild.value;
+        item["hsn"] = row.childNodes[2].firstChild.value;
+        item["quantity"] = row.childNodes[3].firstChild.value;
+        item["unit"] = row.childNodes[4].firstChild.value;
+        item["rate_per_item"] = row.childNodes[5].firstChild.value;
+        item["discount"] = row.childNodes[6].firstChild.value;
+        item["taxable_value"] = row.childNodes[7].firstChild.value;
+        item["cgst_rate"] = row.childNodes[8].firstChild.value;
+        item["cgst_amount"] = row.childNodes[9].firstChild.value;
+        item["sgst_rate"] = row.childNodes[10].firstChild.value;
+        item["sgst_amount"] = row.childNodes[11].firstChild.value;
+        item["net_amount"] = row.childNodes[12].firstChild.value;
+        items.push(item);
     }
+    let totals = {
+        total_taxable_amount: document.getElementById("sgstTotalTaxable").value,
+        total_tax: document.getElementById("sgstTotalTax").value,
+        invoice_total: document.getElementById("sgstInvoiceTotal").value,
+    }
+    let bill = {
+        user: user,
+        invoice: invoice,
+        item: items,
+        totals: totals
+    }
+    sendToServer(bill);
 }
+
+/*-------------------------------------------------------------------------
+|           Functions for IGST calculation, updation and deletion         |
+-------------------------------------------------------------------------*/
 
 const addIgstItem = () => {
     let id = ++igstSerialNo;

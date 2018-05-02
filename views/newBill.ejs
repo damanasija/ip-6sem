@@ -57,47 +57,46 @@
     <div class="row">
         <div class="col-md-6">
             <h3><strong id="userCompanyName"><%= user.company_name %></strong></h3>
-            <h4 class="border"><strong>GSTIN:- </strong id="userGSTIN"><%= user.gstin %></h4>
+            <h4 class="border"><strong>GSTIN:- </strong><span id="userGstin"><%= user.gstin %></span></h4>
             <h5 id="userAddress"><%= user.address %></h5>
             <h5><span id="userCity"><%= user.city%></span>, <span id="userPin"><%= user.pin_code %></span></h5>
             <h5 id="userState"><%= user.state %></h5>
             <h5 id="userCountry"><%= user.country %></h5>
-            
         </div>
         <div class="col-md-6">
             <br>
             <div class="row">
                 <strong class="col-md-2">Firm Name: </strong>
                 <div class="form-group col-md-7">
-                   <input type="text" class="form-control input-sm" id="firmName" placeholder="Firm Name">
+                   <input type="text" class="form-control input-sm" id="recieverName" placeholder="Firm Name">
                 </div>
             </div>
             <div class="row">
                 <strong class="col-md-2">GSTIN</strong>
                 <div class="form-group col-md-7">
-                    <input type="text" class="form-control input-sm" id="firmGSTIN" placeholder="GSTIN">
+                    <input type="text" class="form-control input-sm" id="recieverGSTIN" placeholder="GSTIN">
                 </div>
             </div>
             <div class="row">
                 <strong class="col-md-2">Address:</strong>
                 <div class="form-group col-md-7">
-                    <input type="text" class="form-control input-sm" id="firmAddress" placeholder="Address">
+                    <input type="text" class="form-control input-sm" id="recieverAddress" placeholder="Address">
                 </div>
             </div>
             <div class="row">
                 <strong class="col-md-2">City:</strong>
                 <div class="form-group col-md-3">
-                    <input type="text" class="form-control input-sm" id="firmCity" placeholder="City">
+                    <input type="text" class="form-control input-sm" id="recieverCity" placeholder="City">
                 </div>
                 <strong class="col-md-2">Pin Code:</strong>
                 <div class="form-group col-md-2">
-                    <input type="text" class="form-control input-sm" id="firmPin" placeholder="Pin Code">
+                    <input type="text" class="form-control input-sm" id="recieverPin" placeholder="Pin Code">
                 </div>
             </div>
             <div class="row">
                 <strong class="col-md-2">State/UT:</strong>
                 <div class="col-md-3">
-                    <select name="state" id="firmState" class="btn btn-sm form-control input-sm" onchange="billSelector()">
+                    <select name="state" id="recieverState" class="btn btn-sm form-control input-sm" onchange="billSelector()">
                         <% states.forEach( (state) => { %>
                         <option value="<%= state.name%>"><strong><%= state.name %></strong></option>
                         <% }) %>
@@ -105,7 +104,7 @@
                 </div>
                 <strong class="col-md-2">Country:</strong>
                 <div class="col-md-2">
-                    <input type="text" class="form-control input-sm" id="firmCountry" value="INDIA" placeholder="Country" disabled="true">                    
+                    <input type="text" class="form-control input-sm" id="recieverCountry" value="INDIA" placeholder="Country" disabled="true">                    
                 </div>
             </div>
         </div>
@@ -168,7 +167,7 @@
         </div>
         <div class="col-md-1">
             <button class="btn btn-primary" onclick="addSgstItem()">Add Item</button>
-            <button class="btn btn-success" style="margin-top: 1.5em;" disabled>Submit</button>          
+            <button class="btn btn-success" onclick="generateSgstBill()" style="margin-top: 1.5em;">Submit</button>          
         </div>    
     </div>
 </div>

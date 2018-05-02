@@ -197,7 +197,6 @@ app.get("/bills/new", (req, res) => {
     res.render("newBill",{user: user, states: states, invoiceNo: invoiceNo});
 });
 
-
 app.get("*", (req, res) => {
     res.send("404 Page Not Found.");
 });
@@ -209,6 +208,10 @@ app.post("/newUser", (req, res) => {
     res.send(req.body);
 });
 
+app.post("/bills", (req, res) => {
+    console.log(req.body);
+    res.send("OK");
+});
 
 app.listen(3000, () => {
     console.log(`Server is started`);
