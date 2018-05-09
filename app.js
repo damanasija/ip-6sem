@@ -5,7 +5,8 @@ const bodyParser = require('body-parser');
 app.set('view engine', 'ejs');
 
 app.use(express.static(__dirname + "public"));
-app.use(express.static('public'));
+app.use(express.static("public"));
+
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
@@ -194,7 +195,7 @@ app.post("/login", (req, res) => {
 
 app.get("/bills/new", (req, res) => {
     invoiceNo = Date + "0001";
-    res.render("newBill",{user: user, states: states, invoiceNo: invoiceNo});
+    res.render("bills/new",{user: user, states: states, invoiceNo: invoiceNo});
 });
 
 app.get("*", (req, res) => {

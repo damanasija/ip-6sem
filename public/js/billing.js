@@ -7,8 +7,8 @@ document.getElementById("recieverState").value = document.getElementById("userSt
 let sgstSerialNo = 0;
 let igstSerialNo = 0;
 let taxRates = null;
-let nonDigitsRegex = /[^0-9.]/g;
-// let nonDigitsRegex = /[^0-9]+/g;
+let nonDigitsRegex = /[^0-9\.]/g;
+let digitsRegex = /^[0-9]+\.?[0-9]*$/;
 const dangerClass = "alert alert-danger";
 const successClass = "alert alert-success";
 const states = [
@@ -158,6 +158,12 @@ const states = [
     }
 ];
 
+function checkDec(el){
+    var ex = /^[0-9]+\.?[0-9]*$/;
+    if(ex.test(el.value)==false){
+      el.value = el.value.substring(0,el.value.length - 1);
+     }
+   }
 /*-----------------------------------------------------------------------
 |               Generic Functions(Not related to billing)               |
 -----------------------------------------------------------------------*/
@@ -199,9 +205,20 @@ const isNullOrUndefined = (reference) => {
     return 0;
 }
 
+
 /*-----------------------------------------------------------------------
 |           Generic Functions(Related to billing)                       |
 -----------------------------------------------------------------------*/
+
+const isValidDescription = (rowRef) => {
+    let desc = rowRef.childNodes[1].firstChild;
+    if(desc.value == ""){
+        alert("Description is empty");
+        desc.focus();
+        return false;
+    }
+    return true;
+}
 
 const billSelector = () =>{
     userState = document.getElementById("userState").innerHTML;
@@ -227,6 +244,10 @@ const setQty = (rowRef, type) => {
     let qty = rowRef.childNodes[3].firstChild;
     if(isNaN(qty.value)){
         qty.value = qty.value.replace(nonDigitsRegex, "");
+        if(qty.value.split('.').length > 2)
+            qty.value = qty.value.replace(/\.+$/, "");
+        if(isNaN(qty.value))
+            qty.value = 0;
     }
     if(qty.value != ""){
         qty.value = parseInt(qty.value);
@@ -240,9 +261,15 @@ const setQty = (rowRef, type) => {
 
 const setDiscount = (rowRef, type) => {
     let discount = rowRef.childNodes[6].firstChild;
+
     if(isNaN(discount.value)){
         discount.value = discount.value.replace(nonDigitsRegex, "");
+        if(discount.value.split('.').length > 2)
+            discount.value = discount.value.replace(/\.+$/, "");
+        if(isNaN(discount.value))
+            discount.value = 0;
     }
+
     if(discount.value > 100){
         alert("Discount can't be greater than 100");
         let val = parseInt(discount.value);
@@ -277,6 +304,10 @@ const setTaxRate = (rowRef, index, type) => {
     }
     if(isNaN(taxRate.value)){
         taxRate.value = taxRate.value.replace(nonDigitsRegex, "");
+        if(taxRate.value.split('.').length > 2)
+            taxRate.value = taxRate.value.replace(/\.+$/, "");
+        if(isNaN(taxRate.value))
+            taxRate.value = 0;
     }
     if(taxRate.value != ""){
         if(type == "sgst")
@@ -290,6 +321,10 @@ const setRatePerItem = (rowRef, type) => {
     let ratePerItem = rowRef.childNodes[5].firstChild;    
     if(isNaN(ratePerItem.value)){
         ratePerItem.value = ratePerItem.value.replace(nonDigitsRegex, "");
+        if(ratePerItem.value.split('.').length > 2)
+            ratePerItem.value = ratePerItem.value.replace(/\.+$/, "");
+        if(isNaN(ratePerItem.value))
+            ratePerItem.value = 0;
     }
 
     if(ratePerItem.value == "-" || ratePerItem.value < 0){
@@ -309,7 +344,53 @@ const setRatePerItem = (rowRef, type) => {
 }
 
 const isValidBuyer = () => {
-    let recieverName = document.getElementById("recieverName")
+    let name = document.getElementById("recieverName");
+    let gstin = document.getElementById("recieverGSTIN");
+    let address = document.getElementById("recieverAddress");
+    let city = document.getElementById("recieverCity");
+    let pin = document.getElementById("recieverPin");
+
+    if(name.value == ""){
+        window.alert("Recipient's name can't be empty!");
+        name.focus();
+        return false;
+    }
+    if(!isNaN(name.value)){
+        alert("Recipient's name can't contain a number.")
+        name.focus();
+        return false;
+    }
+    if(name.value.length > 40){
+        name.value = name.value.replace(/^([a-zA-Z0-9]){3,5}$/);
+        name.focus();
+        return false;
+    }
+    if(gstin.value == ""){
+        alert("Recipient's GSTIN can't be empty!");
+        gstin.focus();
+        return false;
+    }
+    if(gstin.value.length != 15){
+        alert("Invalid recipient GSTIN");
+        gstin.focus();
+        return false;
+    }
+    if(address.value == ""){
+        alert("Invalid recpient's address.");
+        address.focus();
+        return false;
+    }
+    if(city.value == ""){
+        alert("Invalid city name.");
+        city.focus();
+        return false;
+    }
+    if(pin.value.length != 6 || pin.value == ""){
+        alert("Invalid pin.");
+        pin.focus();
+        return false;
+    }
+    return true;
 }
 
 const sendToServer = (billObject) => {
@@ -415,7 +496,7 @@ const addSgstItem = () => {
     newDiscountInput.setAttribute("size", "1");
     newDiscountInput.setAttribute("oninput", `setDiscount(${rowId}, "sgst")`);
     newDiscountInput.setAttribute("onblur", `sgstCalculator(${rowId})`);
-    newDiscountInput.className = "form-control";
+    newDiscountInput.className = "form-control decimal";
     newDiscountCell.appendChild(newDiscountInput);
 
     let newTaxCell = document.createElement("td");
@@ -499,6 +580,8 @@ const addSgstItem = () => {
     newRow.appendChild(newDeleteCell);
     
     tableBody.appendChild(newRow);
+
+    document.getElementById("sgstSubmit").disabled = false;
 }
 
 const deleteSgstItem = (rowReference) => {
@@ -506,6 +589,10 @@ const deleteSgstItem = (rowReference) => {
     sgstTableBody.removeChild(rowReference);
     sgstSerialNo--;
     setSgstIds();
+    if(sgstSerialNo == 0){
+        document.getElementById("sgstSubmit").disabled = true;        
+    }
+    populateSgstValues();    
 }
 
 const setSgstIds = () => {
@@ -538,7 +625,7 @@ const setSgstIds = () => {
     }
 }
 
-const sgstCalculator = (rowRef) => {    
+const sgstCalculator = (rowRef) => {
     let quantity       = rowRef.childNodes[3].firstChild;
     let ratePerItem    = rowRef.childNodes[5].firstChild;
     let discount       = rowRef.childNodes[6].firstChild;
@@ -591,12 +678,38 @@ const populateSgstValues = () => {
     invoiceTotal.value = totalNet;
 }
 
+const isSgstValid = () => {
+    if(!isValidBuyer()){
+        return false;
+    }
+    let table = document.getElementById("sgstTableBody");
+    if(table.childElementCount == 0){
+        alert("Can't submit empty reciept");
+        return false;
+    }
+    let n = table.childElementCount;
+    for(let i = 0; i < n; i++){
+        let rowRef = table.childNodes[i];
+        if(!isValidDescription(rowRef)){
+            return false;
+        }
+        setHsn(rowRef);
+        sgstCalculator(rowRef);
+    }
+    let invoiceTotal = document.getElementById("sgstInvoiceTotal");
+    if(invoiceTotal.value == 0){
+        alert("Can't submit bill with empty total invoice amount.");
+        return false;
+    }
+    return window.confirm("Are you sure the data is correct?");
+}
 
 const generateSgstBill = () =>{
     // VALIDATE ALL FIELDS
     if(!isSgstValid()){
-
+        return;
     }
+
     let user = {
         company_name: document.getElementById("userCompanyName").innerHTML,
         gstin: document.getElementById("userGstin").innerHTML,
@@ -605,7 +718,7 @@ const generateSgstBill = () =>{
         state: document.getElementById("userState").innerHTML,
         country: document.getElementById("userCountry").innerHTML
     }
-    // INVOICE DATES AND TIMES ARE ADDED VIA SERVER
+    // INVOICE DATES AND TIMES ARE ADDED BY tHE SERVER
     let invoice = {
         type: "intra-state",
     }
@@ -619,14 +732,14 @@ const generateSgstBill = () =>{
         item["hsn"] = row.childNodes[2].firstChild.value;
         item["quantity"] = row.childNodes[3].firstChild.value;
         item["unit"] = row.childNodes[4].firstChild.value;
-        item["rate_per_item"] = row.childNodes[5].firstChild.value;
+        item["ratePerItem"] = row.childNodes[5].firstChild.value;
         item["discount"] = row.childNodes[6].firstChild.value;
-        item["taxable_value"] = row.childNodes[7].firstChild.value;
-        item["cgst_rate"] = row.childNodes[8].firstChild.value;
-        item["cgst_amount"] = row.childNodes[9].firstChild.value;
-        item["sgst_rate"] = row.childNodes[10].firstChild.value;
-        item["sgst_amount"] = row.childNodes[11].firstChild.value;
-        item["net_amount"] = row.childNodes[12].firstChild.value;
+        item["taxableValue"] = row.childNodes[7].firstChild.value;
+        item["cgstRate"] = row.childNodes[8].firstChild.value;
+        item["cgstAmount"] = row.childNodes[9].firstChild.value;
+        item["sgstRate"] = row.childNodes[10].firstChild.value;
+        item["sgstAmount"] = row.childNodes[11].firstChild.value;
+        item["netAmount"] = row.childNodes[12].firstChild.value;
         items.push(item);
     }
     let totals = {
@@ -637,7 +750,7 @@ const generateSgstBill = () =>{
     let bill = {
         user: user,
         invoice: invoice,
-        item: items,
+        items: items,
         totals: totals
     }
     sendToServer(bill);
@@ -671,6 +784,7 @@ const addIgstItem = () => {
     let newHsnCell = document.createElement("td");
     let newHsnInput = document.createElement("input");
     newHsnInput.setAttribute("type", "text");
+    newHsnInput.setAttribute("onblur", `setHsn(${rowId})`);
     newHsnInput.className = "form-control";
     newHsnInput.setAttribute("size", "30");    
     newHsnCell.appendChild(newHsnInput);
@@ -679,6 +793,8 @@ const addIgstItem = () => {
     let newQtyCell = document.createElement("td");
     let newQtyInput = document.createElement("input");
     newQtyInput.setAttribute("type", "text");
+    newQtyInput.setAttribute("oninput", `setQty(${rowId}, "igst")`);
+    newQtyInput.setAttribute("onblur", `igstCalculator(${rowId})`);
     newQtyInput.className = "form-control";
     newQtyInput.setAttribute("size", "30");
     newQtyCell.appendChild(newQtyInput);
@@ -716,7 +832,8 @@ const addIgstItem = () => {
     let newRateCell = document.createElement("td");
     let newRateInput = document.createElement("input");
     newRateInput.setAttribute("type", "text");
-    newRateInput.setAttribute("oninput", `igstCalculator(${rowId})`);
+    newRateInput.setAttribute("oninput", `setRatePerItem(${rowId}, "igst")`);
+    newRateInput.setAttribute("onblur", `igstCalculator(${rowId})`);   
     newRateInput.setAttribute("size", "35");    
     newRateInput.className = "form-control";
     newRateCell.appendChild(newRateInput);
@@ -725,7 +842,8 @@ const addIgstItem = () => {
     let newDiscountInput = document.createElement("input");
     newDiscountInput.setAttribute("type", "text");
     newDiscountInput.setAttribute("size", "2")  
-    newDiscountInput.setAttribute("oninput", `setDiscount(${rowId}, "igst")`);      
+    newDiscountInput.setAttribute("oninput", `setDiscount(${rowId}, "igst")`);
+    newDiscountInput.setAttribute("onblur", `igstCalculator(${rowId})`);
     newDiscountInput.className = "form-control";
     newDiscountCell.appendChild(newDiscountInput);
 
@@ -790,6 +908,8 @@ const addIgstItem = () => {
 
     // APPENDING THE NEWLY CREATED ROW TO THE TABLEBODY
     tableBody.appendChild(newRow);
+
+    document.getElementById("igstSubmit").disabled = false;   
 }
 
 const deleteIgstItem = (rowReference) => {
@@ -797,6 +917,10 @@ const deleteIgstItem = (rowReference) => {
     igstTableBody.removeChild(rowReference);
     igstSerialNo--;
     setIgstIds();
+    if(igstSerialNo == 0){
+        document.getElementById("igstSubmit").disabled = true;        
+    }
+    populateIgstValues();
 }
 
 const setIgstIds = () => {
@@ -805,11 +929,149 @@ const setIgstIds = () => {
         let rowRef = `igstrow${i + 1}`;
         igstTableBody.childNodes[i].id = rowRef;
         igstTableBody.childNodes[i].childNodes[0].innerText = i + 1;
+        igstTableBody.childNodes[i].childNodes[2].firstChild.setAttribute('onblur', `setHsn(${rowRef})`);
 
+        // FOR QUANITITY CELLS
+        igstTableBody.childNodes[i].childNodes[3].firstChild.setAttribute('oninput', `setQty(${rowRef}, "igst")`);
+        igstTableBody.childNodes[i].childNodes[3].firstChild.setAttribute('onblur', `igstCalculator(${rowRef})`);
 
-        igstTableBody.childNodes[i].childNodes[13].firstChild.setAttribute('onclick', `deleteIgstItem(${rowRef})`);
-        igstTableBody.childNodes[i].childNodes[5].firstChild.setAttribute('oninput', `igstCalculator(${rowRef})`);
+        // FOR RATE PER ITEM CELLS
+        igstTableBody.childNodes[i].childNodes[5].firstChild.setAttribute('oninput', `setRatePerItem(${rowRef}, "igst")`);
+        igstTableBody.childNodes[i].childNodes[5].firstChild.setAttribute('onblur', `igstCalculator(${rowRef})`);
+
+        // FOR DISCOUNT CELLS
+        igstTableBody.childNodes[i].childNodes[6].firstChild.setAttribute('oninput', `setDiscount(${rowRef}, "igst")`);
+        igstTableBody.childNodes[i].childNodes[6].firstChild.setAttribute('onblur', `igstCalculator(${rowRef})`);
+
+        // FOR IGST TAX CELLS
         igstTableBody.childNodes[i].childNodes[8].firstChild.setAttribute('oninput', `setTaxRate(${rowRef}, 8, "igst")`);
-        igstTableBody.childNodes[i].childNodes[8].firstChild.setAttribute('onblur', `igstCalculator(${rowRef})`);        
+        igstTableBody.childNodes[i].childNodes[8].firstChild.setAttribute('onblur', `igstCalculator(${rowRef})`);
+
+        // FOR DELETE CELLS
+        igstTableBody.childNodes[i].childNodes[11].firstChild.setAttribute('onclick', `deleteIgstItem(${rowRef})`);
     }
+}
+
+const igstCalculator = (rowRef) => {
+    let quantity       = rowRef.childNodes[3].firstChild;
+    let ratePerItem    = rowRef.childNodes[5].firstChild;
+    let discount       = rowRef.childNodes[6].firstChild;
+    let taxableValue   = rowRef.childNodes[7].firstChild;
+    let igstRate       = rowRef.childNodes[8].firstChild;
+    let igstAmt        = rowRef.childNodes[9].firstChild;
+    let netAmt         = rowRef.childNodes[10].firstChild;
+
+    // Default values for each field
+    if(quantity.value == "")
+        quantity.value = 1;
+    if(discount.value == "")
+        discount.value = 0;
+    if(igstRate.value == "")
+        igstRate.value = 0;
+    if(ratePerItem.value == "")
+        ratePerItem.value = 0;
+
+    taxableValue.value = roundTo(quantity.value * (ratePerItem.value * (1 - discount.value/100 )), 2);
+    igstAmt.value = roundTo(taxableValue.value*(igstRate.value)/100, 2);
+    netAmt.value = roundTo(parseFloat(igstAmt.value) + parseFloat(taxableValue.value), 2 );
+    populateIgstValues();
+}
+
+const populateIgstValues = () => {
+    let table = document.getElementById("igstTableBody");
+    let taxableTotal = document.getElementById("igstTotalTaxable");
+    let taxTotal = document.getElementById("igstTotalTax");
+    let invoiceTotal = document.getElementById("igstInvoiceTotal");
+    let totalGross = 0;
+    let totalTax = 0;
+    let totalNet = 0;
+
+    for(let i = 0; i < table.childElementCount; i++){
+        let row = table.childNodes[i];
+        if(row.childNodes[7].firstChild.value !=  "")
+            totalGross += parseFloat(row.childNodes[7].firstChild.value);
+        if(row.childNodes[8].firstChild.value != "")
+            totalTax += parseFloat(row.childNodes[9].firstChild.value);
+        if(row.childNodes[10].firstChild.value != "")
+            totalNet += parseFloat(row.childNodes[10].firstChild.value);
+    }
+    taxableTotal.value = totalGross;
+    taxTotal.value = totalTax;
+    invoiceTotal.value = totalNet;
+}
+
+const isIgstValid = () => {
+    if(!isValidBuyer()){
+        return false;
+    }
+    let table = document.getElementById("igstTableBody");
+    if(table.childElementCount == 0){
+        alert("Can't submit empty reciept");
+        return false;
+    }
+    let n = table.childElementCount;
+    for(let i = 0; i < n; i++){
+        let rowRef = table.childNodes[i];
+        if(!isValidDescription(rowRef)){
+            return false;
+        }
+        setHsn(rowRef);
+        igstCalculator(rowRef);
+    }
+    invoiceTotal = document.getElementById("igstInvoiceTotal");
+    if(invoiceTotal.value == 0){
+        alert("Can't submit bill with empty total invoice amount.");
+        return false;
+    }
+    return window.confirm("Are you sure the data is correct?");
+}
+
+const generateIgstBill = () =>{
+    // VALIDATE ALL FIELDS
+    if(!isIgstValid()){
+        return;
+    }
+
+    let user = {
+        company_name: document.getElementById("userCompanyName").innerHTML,
+        gstin: document.getElementById("userGstin").innerHTML,
+        city: document.getElementById("userCity").innerHTML,
+        pin: document.getElementById("userPin").innerHTML,
+        state: document.getElementById("userState").innerHTML,
+        country: document.getElementById("userCountry").innerHTML
+    }
+    // INVOICE DATES AND TIMES ARE ADDED BY tHE SERVER
+    let invoice = {
+        type: "inter-state",
+    }
+    let items = [];
+    let table = document.getElementById("igstTableBody");
+    for(let i = 0; i < table.childElementCount; i++) {
+        let row = table.childNodes[i];
+        let item = {};
+        item["sr"] = row.childNodes[0].innerHTML;
+        item["description"] = row.childNodes[1].firstChild.value;
+        item["hsn"] = row.childNodes[2].firstChild.value;
+        item["quantity"] = row.childNodes[3].firstChild.value;
+        item["unit"] = row.childNodes[4].firstChild.value;
+        item["ratePerItem"] = row.childNodes[5].firstChild.value;
+        item["discount"] = row.childNodes[6].firstChild.value;
+        item["taxableValue"] = row.childNodes[7].firstChild.value;
+        item["igstRate"] = row.childNodes[8].firstChild.value;
+        item["igstAmount"] = row.childNodes[9].firstChild.value;
+        item["netAmount"] = row.childNodes[10].firstChild.value;
+        items.push(item);
+    }
+    let totals = {
+        total_taxable_amount: document.getElementById("igstTotalTaxable").value,
+        total_tax: document.getElementById("igstTotalTax").value,
+        invoice_total: document.getElementById("igstInvoiceTotal").value,
+    }
+    let bill = {
+        user: user,
+        invoice: invoice,
+        items: items,
+        totals: totals
+    }
+    sendToServer(bill);
 }

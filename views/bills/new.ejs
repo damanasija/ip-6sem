@@ -1,5 +1,5 @@
-<% include ./partials/header.ejs %>
-<% include ./navbar.ejs %>
+<% include ../partials/header.ejs %>
+<% include ../navbar.ejs %>
 <style>
     .totals>td{
         padding-bottom: 0.5em;
@@ -167,7 +167,7 @@
         </div>
         <div class="col-md-1">
             <button class="btn btn-primary" onclick="addSgstItem()">Add Item</button>
-            <button class="btn btn-success" onclick="generateSgstBill()" style="margin-top: 1.5em;">Submit</button>          
+            <button class="btn btn-success" id="sgstSubmit" onclick="generateSgstBill()" style="margin-top: 1.5em;" disabled>Submit</button>          
         </div>    
     </div>
 </div>
@@ -222,13 +222,13 @@
             </div>
         </div>
         <div class="col-md-1">
-                <button class="btn btn-primary" onclick="addIgstItem()">Add Item</button>
-                <button disabled="disabled" class="btn btn-success" style="margin-top: 1.5em;">Submit</button>
+            <button class="btn btn-primary" onclick="addIgstItem()">Add Item</button>
+            <button disabled="disabled" id="igstSubmit" class="btn btn-success" style="margin-top: 1.5em;" onclick="generateIgstBill()">Submit</button>
         </div>    
     </div>
 </div>
 </div>
+<script src="/js/jquery/dist/jquery.min.js"></script>
 <script src="/js/billing.js"></script>
 
-
-<% include ./partials/footer.ejs %>
+<% include ../partials/footer.ejs %>
