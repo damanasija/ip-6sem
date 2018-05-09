@@ -158,12 +158,6 @@ const states = [
     }
 ];
 
-function checkDec(el){
-    var ex = /^[0-9]+\.?[0-9]*$/;
-    if(ex.test(el.value)==false){
-      el.value = el.value.substring(0,el.value.length - 1);
-     }
-   }
 /*-----------------------------------------------------------------------
 |               Generic Functions(Not related to billing)               |
 -----------------------------------------------------------------------*/
@@ -235,8 +229,12 @@ const billSelector = () =>{
 
 const setHsn = (rowRef) => {
     let hsn = rowRef.childNodes[2].firstChild;
-    if(!((hsn.value == "") || (hsn.value.length == 2) || (hsn.value.length == 4) || (hsn.value.length == 8))){
-        alert("Invalid HSN code.");
+    if(isNaN(hsn.value)){
+        hsn.value = hsn.value.replace(/[^0-9]/g, "");
+    }
+    if(!((hsn.value == "") || (hsn.value.length == 2) || (hsn.value.length == 4) || (hsn.value.length == 8)) ){
+        alert("Invalid hsn, it will be reset");
+        hsn.value = "";
     }
 }
 
@@ -249,6 +247,7 @@ const setQty = (rowRef, type) => {
         if(isNaN(qty.value))
             qty.value = 0;
     }
+
     if(qty.value != ""){
         qty.value = parseInt(qty.value);
         if(type == "sgst")
@@ -382,6 +381,11 @@ const isValidBuyer = () => {
     }
     if(city.value == ""){
         alert("Invalid city name.");
+        city.focus();
+        return false;
+    }
+    if(!isNaN(city.value)){
+        alert("City's name can't contain numbers");
         city.focus();
         return false;
     }
