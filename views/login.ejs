@@ -10,6 +10,9 @@
 <h1 class="jumbotron text-center">Login</h1>
 
 <div class="container center-block">
+  <div class="container alert alert-danger center-block text-center" style="display:<%= display %>">
+    <h4><strong><%= error %></strong></h4>
+  </div>
   <form method="POST" action="/login" onsubmit="return validateForm()">
 
 
@@ -21,13 +24,13 @@
         <h4 class="lead text-center bg-info" style="width: 25%;">Enter Details</h4>
         <div class="form-group">
 
-          <label for="username">Username</label>
-          <input type="text" name="username" class="form-control" id="username" placeholder="Username">
+          <label for="email">Email</label>
+          <input type="text" name="email" class="form-control" id="email" placeholder="Email" required>
         </div>
 
         <div class="form-group">
           <label for="password">Password</label>
-          <input type="password" name="password" class="form-control" id="password" placeholder="Password">
+          <input type="password" name="password" class="form-control" id="password" placeholder="Password" required>
         </div>
         <input type="submit" class="btn btn-success" value="Submit">
         <div id="message" class="alert alert-danger text-center"></div>
@@ -35,15 +38,9 @@
     </div>
 
     <div class="col-md-3"></div>
-
-
-    <!-- <div class="form-group">
-      <label for="logo">Choose Company Logo</label>
-      <input type="file" name="logo" id="logo">
-    </div> -->
   </form>
 </div>
-<script>
+<!-- <script>
   const displayError = (message) => {
     let messageDiv = document.getElementById("message");
     messageDiv.innerHTML = message;
@@ -54,7 +51,7 @@
   }
   function validateForm () {
     let messageDiv = document.getElementById("message");
-    let username = document.getElementById("username");
+    let username = document.getElementById("email");
     let password = document.getElementById("password");
     if((username.value == "") && (password.value == "")){
       displayError("<strong>All fields are required.</strong>");
@@ -74,7 +71,7 @@
     }
     return true;
   }
-</script>
+</script> -->
 
 
 <% include ./partials/footer%>

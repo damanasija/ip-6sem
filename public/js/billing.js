@@ -342,7 +342,7 @@ const setRatePerItem = (rowRef, type) => {
     }
 }
 
-const isValidBuyer = () => {
+const isValidReciever = () => {
     let name = document.getElementById("recieverName");
     let gstin = document.getElementById("recieverGSTIN");
     let address = document.getElementById("recieverAddress");
@@ -398,11 +398,14 @@ const isValidBuyer = () => {
 }
 
 const sendToServer = (billObject) => {
+    console.log(billObject);
+
     let bill = JSON.stringify(billObject);
     xhr = new XMLHttpRequest();
     xhr.open("POST", "/bills", true);
     xhr.setRequestHeader("Content-type", "application/json");
     xhr.onload = function() {
+        console.log(this.responseText);
         if(this.status == 200){
             if(this.responseText == "OK"){
                 alert("Bill submitted to server");
@@ -410,6 +413,36 @@ const sendToServer = (billObject) => {
         }
     }
     xhr.send(bill);
+}
+
+const getSenderDetails = () => {
+    let sender = {
+        firmName: document.getElementById("userFirmName").innerHTML,
+        gstin: document.getElementById("userGstin").innerHTML,
+        email: document.getElementById("userEmail").innerHTML,
+        phone: document.getElementById("userPhone").innerHTML,
+        address: document.getElementById("userAddress").innerHTML,
+        city: document.getElementById("userCity").innerHTML,
+        pincode: document.getElementById("userPin").innerHTML,
+        state: document.getElementById("userState").innerHTML,
+        country: document.getElementById("userCountry").innerHTML,
+        website: document.getElementById("userWebsite").innerHTML
+    }
+    return sender;
+}
+
+const getRecieverDetails = () => {
+    let reciever = {
+        firmName: document.getElementById("recieverName").value,
+        gstin: document.getElementById("recieverGSTIN").value,
+        address: document.getElementById("recieverAddress").value,
+        city: document.getElementById("recieverCity").value,
+        pincode: document.getElementById("recieverPin").value,
+        state: document.getElementById("recieverState").value,
+        country: document.getElementById("recieverCountry").value
+    }
+    console.log(reciever);
+    return reciever;
 }
 
 
@@ -683,7 +716,7 @@ const populateSgstValues = () => {
 }
 
 const isSgstValid = () => {
-    if(!isValidBuyer()){
+    if(!isValidReciever()){
         return false;
     }
     let table = document.getElementById("sgstTableBody");
@@ -714,14 +747,6 @@ const generateSgstBill = () =>{
         return;
     }
 
-    let user = {
-        company_name: document.getElementById("userCompanyName").innerHTML,
-        gstin: document.getElementById("userGstin").innerHTML,
-        city: document.getElementById("userCity").innerHTML,
-        pin: document.getElementById("userPin").innerHTML,
-        state: document.getElementById("userState").innerHTML,
-        country: document.getElementById("userCountry").innerHTML
-    }
     // INVOICE DATES AND TIMES ARE ADDED BY tHE SERVER
     let invoice = {
         type: "intra-state",
@@ -746,16 +771,15 @@ const generateSgstBill = () =>{
         item["netAmount"] = row.childNodes[12].firstChild.value;
         items.push(item);
     }
-    let totals = {
-        total_taxable_amount: document.getElementById("sgstTotalTaxable").value,
-        total_tax: document.getElementById("sgstTotalTax").value,
-        invoice_total: document.getElementById("sgstInvoiceTotal").value,
-    }
+
     let bill = {
-        user: user,
+        sender: getSenderDetails(),
         invoice: invoice,
+        reciever: getRecieverDetails(),
         items: items,
-        totals: totals
+        totalTaxableAmount: document.getElementById("sgstTotalTaxable").value,
+        totalTax: document.getElementById("sgstTotalTax").value,
+        invoiceTotal: document.getElementById("sgstInvoiceTotal").value
     }
     sendToServer(bill);
 }
@@ -1005,7 +1029,7 @@ const populateIgstValues = () => {
 }
 
 const isIgstValid = () => {
-    if(!isValidBuyer()){
+    if(!isValidReciever()){
         return false;
     }
     let table = document.getElementById("igstTableBody");
@@ -1036,14 +1060,7 @@ const generateIgstBill = () =>{
         return;
     }
 
-    let user = {
-        company_name: document.getElementById("userCompanyName").innerHTML,
-        gstin: document.getElementById("userGstin").innerHTML,
-        city: document.getElementById("userCity").innerHTML,
-        pin: document.getElementById("userPin").innerHTML,
-        state: document.getElementById("userState").innerHTML,
-        country: document.getElementById("userCountry").innerHTML
-    }
+
     // INVOICE DATES AND TIMES ARE ADDED BY tHE SERVER
     let invoice = {
         type: "inter-state",
@@ -1066,16 +1083,15 @@ const generateIgstBill = () =>{
         item["netAmount"] = row.childNodes[10].firstChild.value;
         items.push(item);
     }
-    let totals = {
-        total_taxable_amount: document.getElementById("igstTotalTaxable").value,
-        total_tax: document.getElementById("igstTotalTax").value,
-        invoice_total: document.getElementById("igstInvoiceTotal").value,
-    }
+
     let bill = {
-        user: user,
+        sender: getSenderDetails(),
+        reciever: getRecieverDetails(),        
         invoice: invoice,
         items: items,
-        totals: totals
+        totalTaxableAmount: document.getElementById("igstTotalTaxable").value,
+        totalTax: document.getElementById("igstTotalTax").value,
+        invoiceTotal: document.getElementById("igstInvoiceTotal").value
     }
     sendToServer(bill);
 }

@@ -1,178 +1,61 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-const monngoose = require("mongoose");
+const states = require('./models/states');
+const mongoose = require('mongoose')
+require('mongoose-double')(mongoose);
+
+const session = require('client-sessions');
+const bcrypt = require('bcryptjs');
+
+const User = require("./models/user");
+const Bill = require("./models/bill");
+
+let display = "none";
+
+function requireLogin (req, res, next) {
+    if (!req.user) {
+      res.redirect('/login');
+    } else {
+      next();
+    }
+};
+
+
+mongoose.connect("mongodb://localhost/test_app");
+
 
 app.set('view engine', 'ejs');
 
-app.use(express.static(__dirname + "public"));
+// app.use(express.static(__dirname + "public"));
 app.use(express.static("public"));
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-//object that contains all details of the user
-let user = {
-    username: "Daman",
-    company_name: "DA Inc.",
-    country: "INDIA",
-    address: "2940B, Sunny Lane",
-    city: "RAJPURA",
-    state: "PUNJAB",
-    pin_code: "140401",
-    company_phone: "8558045416",
-    email: "daman.asij@gmail.com",
-    website: "www.gmail.com",
-    gstin: "123415",
-    logo: null,
-}
+app.use(session({
+    cookieName: "session",
+    secret: "daseqw1231fsaAADfdfa",
+    duration: 30 * 60 * 1000,
+    activeDuration: 5 * 60 * 1000,
+}));
 
-//an array of key value pairs of states in india
-const states = [
-    {
-        "key": "AN",
-        "name": "ANDAMAN AND NICOBAR ISLANDS"
-    },
-    {
-        "key": "AP",
-        "name": "ANDHRA PRADESH"
-    },
-    {
-        "key": "AR",
-        "name": "ARUNACHAL PRADESH"
-    },
-    {
-        "key": "AS",
-        "name": "ASSAM"
-    },
-    {
-        "key": "BR",
-        "name": "BIHAR"
-    },
-    {
-        "key": "CG",
-        "name": "CHANDIGARH"
-    },
-    {
-        "key": "CH",
-        "name": "CHHATTISGARH"
-    },
-    {
-        "key": "DH",
-        "name": "DADRA AND NAGAR HAVELI"
-    },
-    {
-        "key": "DD",
-        "name": "DAMAN AND DIU"
-    },
-    {
-        "key": "DL",
-        "name": "DELHI"
-    },
-    {
-        "key": "GA",
-        "name": "GOA"
-    },
-    {
-        "key": "GJ",
-        "name": "GUJARAT"
-    },
-    {
-        "key": "HR",
-        "name": "HARYANA"
-    },
-    {
-        "key": "HP",
-        "name": "HIMACHAL PRADESH"
-    },
-    {
-        "key": "JK",
-        "name": "JAMMU AND KASHMIR"
-    },
-    {
-        "key": "JH",
-        "name": "JHARKHAND"
-    },
-    {
-        "key": "KA",
-        "name": "KARNATAKA"
-    },
-    {
-        "key": "KL",
-        "name": "KERALA"
-    },
-    {
-        "key": "LD",
-        "name": "LAKSHADWEEP"
-    },
-    {
-        "key": "MP",
-        "name": "MADHYA PRADESH"
-    },
-    {
-        "key": "MH",
-        "name": "MAHARASHTRA"
-    },
-    {
-        "key": "MN",
-        "name": "MANIPUR"
-    },
-    {
-        "key": "ML",
-        "name": "MEGHALAYA"
-    },
-    {
-        "key": "MZ",
-        "name": "MIZORAM"
-    },
-    {
-        "key": "NL",
-        "name": "NAGALAND"
-    },
-    {
-        "key": "OR",
-        "name": "ODISHA"
-    },
-    {
-        "key": "PY",
-        "name": "PUDUCHERRY"
-    },
-    {
-        "key": "PB",
-        "name": "PUNJAB"
-    },
-    {
-        "key": "RJ",
-        "name": "RAJASTHAN"
-    },
-    {
-        "key": "SK",
-        "name": "SIKKIM"
-    },
-    {
-        "key": "TN",
-        "name": "TAMIL NADU"
-    },
-    {
-        "key": "TS",
-        "name": "TELANGANA"
-    },
-    {
-        "key": "TR",
-        "name": "TRIPURA"
-    },
-    {
-        "key": "UK",
-        "name": "UTTAR PRADESH"
-    },
-    {
-        "key": "UP",
-        "name": "UTTARAKHAND"
-    },
-    {
-        "key": "WB",
-        "name": "WEST BENGAL"
+app.use(function(req, res, next) {
+    res.locals.states = states;
+    if (req.session && req.session.userId) {
+      User.findById(req.session.userId, function(err, foundUser) {
+        if (foundUser) {
+          foundUser.password = undefined; // delete the password from the foundUser
+          req.session.userId = foundUser._id;  //refresh the session value
+          req.user = foundUser;
+          res.locals.user = foundUser;
+        }
+        // finishing processing the middleware and run the route
+        next();
+      });
+    } else {
+      next();
     }
-]
+});
 
 
 //get routes
@@ -180,38 +63,91 @@ app.get("/", (req, res) => {
     res.render("about");
 });
 
-app.get("/signup", (req, res) => {
-    res.render("signup", {states : states});
-});
- 
-app.get("/login", (req, res) => {
-    res.render("login");
+app.get("/register", (req, res) => {
+    res.render("register",{ error:  "", display: "none"});
 });
 
-app.post("/login", (req, res) => {
-    console.log(req.body);
+app.get("/login", (req, res) => {
+    res.render("login", {error : "", display: "none"} );
+});
+
+app.get("/logout", (req, res) => {
+    req.session.reset();
     res.redirect("/login");
 });
 
-app.get("/bills/new", (req, res) => {
-    invoiceNo = Date + "0001";
-    res.render("bills/new",{user: user, states: states, invoiceNo: invoiceNo});
+app.get("/dashboard", requireLogin, (req, res) => {
+    res.render("dashboard");
 });
 
+app.get("/bills",requireLogin, (req, res) => {
+    res.render("bills/index");
+});
+
+app.get("/bills/new", requireLogin, (req, res) => {
+    res.render("bills/new");
+});
+
+app.get("/bills/:id",requireLogin, (req, res) => {
+    res.send("ok");
+});
+
+app.get("/users/:id/edit", (req, res) => {
+    res.status(200).send("Edit user route");
+});
+
+
+
 app.get("*", (req, res) => {
-    res.send("404 Page Not Found.");
+    res.status(404).send("404 Page Not Found.");
 });
 
 
 //post routes
-app.post("/newUser", (req, res) => {
-    console.log(req.body);
-    res.send(req.body);
+app.post("/register", (req, res) => {
+    let hash = bcrypt.hashSync(req.body.user.password, 14);
+    req.body.user.password = hash;
+    let newUser = new User(req.body.user);
+    newUser.save((err) => {
+        if(err){
+            let error = "Something bad happened! Please try again.";
+            if(err.code === 11000){
+                error = "The email Id is already taken! Try another email id.";
+            }
+            return res.render("register", {error : error, display: "block"});
+        }
+        res.redirect("/dashboard");
+    });
 });
 
-app.post("/bills", (req, res) => {
-    console.log(req.body);
-    res.send("OK");
+app.post("/login", (req, res) => {
+    User.findOne({ email: req.body.email }, (err, foundUser) => {
+        if(err || !foundUser || !bcrypt.compareSync(req.body.password, foundUser.password)){
+            return res.render("login", {error: "Incorrect email or password.", display: "block" });
+        }
+        req.session.userId = foundUser._id;
+        res.redirect("/dashboard");
+    });
+});
+
+app.post("/bills", requireLogin, (req, res) => {
+    let newBill = new Bill(req.body);
+    newBill.save((err) => {
+        if(err){
+            return res.send(err);
+        } else {
+            User.findById(req.session.userId, (err, foundUser) => {
+                foundUser.bills.push(newBill);
+                foundUser.save((err) => {
+                    if(err){
+                        res.status(501).send("Internal server error. Couldn't save it");
+                    } else {
+                        res.send(foundUser);
+                    }
+                });
+            })
+        }
+    });
 });
 
 app.listen(3000, () => {

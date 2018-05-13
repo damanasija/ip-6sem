@@ -4,12 +4,15 @@
   "description": "",
   "main": "app.js",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.18.2",
     "bootstrap": "^3.3.7",
+    "client-sessions": "^0.8.0",
     "ejs": "^2.5.8",
     "express": "^4.16.3",
     "jquery": "^3.3.1",
-    "mongoose": "^5.0.13"
+    "mongoose": "^5.0.13",
+    "mongoose-double": "0.0.1"
   },
   "devDependencies": {},
   "scripts": {
