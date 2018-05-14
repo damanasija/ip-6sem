@@ -37,6 +37,8 @@ app.use(session({
     secret: "daseqw1231fsaAADfdfa",
     duration: 30 * 60 * 1000,
     activeDuration: 5 * 60 * 1000,
+    httpOnly: true,
+    ephemeral: true,
 }));
 
 app.use(function(req, res, next) {
