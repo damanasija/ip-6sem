@@ -25,8 +25,9 @@ const billSchema = new mongoose.Schema({
     
   },
   invoice: {
+    number: { type: Number },
     type: { type: String, required: true},
-    date: { type: Date, default: Date.now}
+    date: { type: Date, default: Date.now},
   },
   items: [
     { 

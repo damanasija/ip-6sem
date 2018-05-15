@@ -17,7 +17,8 @@ const userSchema = new mongoose.Schema({
   bills:[
     {type: mongoose.Schema.Types.ObjectId, ref: "Bill" }
   ],
-  joinDate: {type: Date, default: Date.now}
+  joinDate: {type: Date, default: Date.now},
+  nextInvoiceNumber: {type: Number}
 });
 
 module.exports = mongoose.model("User", userSchema);

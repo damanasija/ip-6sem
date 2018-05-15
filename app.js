@@ -83,15 +83,34 @@ app.get("/dashboard", requireLogin, (req, res) => {
 });
 
 app.get("/bills",requireLogin, (req, res) => {
-    res.render("bills/index");
+    User.findById(req.session.userId).populate("bills").exec( (err, user) => {
+        if(!err){
+            res.render("bills/index", {user: user});
+        } else {
+            res.status(501).send(err);
+        }
+    });
 });
 
 app.get("/bills/new", requireLogin, (req, res) => {
-    res.render("bills/new");
+    res.status(200).render("bills/new");
 });
 
 app.get("/bills/:id",requireLogin, (req, res) => {
-    res.send("ok");
+    let billId = req.user.bills.find( (element) => {
+        return element == req.params.id;
+    });
+    if(billId === undefined){
+        res.status(404).send("No such bill found");
+    } else {
+        Bill.findById(req.params.id, (err, foundBill) => {
+            if(err){
+                res.status(501).send(err);
+            } else {
+                res.render("bills/show", { bill: foundBill});
+            }
+        });
+    }
 });
 
 app.get("/users/:id/edit", (req, res) => {
@@ -109,12 +128,13 @@ app.get("*", (req, res) => {
 app.post("/register", (req, res) => {
     let hash = bcrypt.hashSync(req.body.user.password, 14);
     req.body.user.password = hash;
+    req.body.user.nextInvoiceNumber = 1;
     let newUser = new User(req.body.user);
     newUser.save((err) => {
         if(err){
             let error = "Something bad happened! Please try again.";
             if(err.code === 11000){
-                error = "The email Id is already taken! Try another email id.";
+                error = "The email Id or GSTIN is already taken! Try another email id/GSTIN.";
             }
             return res.render("register", {error : error, display: "block"});
         }
@@ -133,6 +153,7 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/bills", requireLogin, (req, res) => {
+    req.body.invoice["number"] = req.user.nextInvoiceNumber;
     let newBill = new Bill(req.body);
     newBill.save((err) => {
         if(err){
@@ -140,6 +161,7 @@ app.post("/bills", requireLogin, (req, res) => {
         } else {
             User.findById(req.session.userId, (err, foundUser) => {
                 foundUser.bills.push(newBill);
+                foundUser.nextInvoiceNumber++;
                 foundUser.save((err) => {
                     if(err){
                         res.status(501).send("Internal server error. Couldn't save it");
@@ -147,7 +169,7 @@ app.post("/bills", requireLogin, (req, res) => {
                         res.send(foundUser);
                     }
                 });
-            })
+            });
         }
     });
 });

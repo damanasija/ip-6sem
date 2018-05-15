@@ -1,4 +1,51 @@
 <% include ../partials/header %>
+<% include ../navbar.ejs %>
+<div class="container">
+  <h1 class="jumbotron">Welcome <%= user.firmName %></h1>
+  <div class="panel panel-primary">
+    <div class="panel-heading">
+      <div class="panel-title">
+        Invoices
+        <span class="pull-right">
+          <strong><%= user.bills.length %></strong> Entries
+        </span>
+      </div>
+    </div>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Reciever</th>
+          <th>Invoice Number</th>
+          <th>Invoice Date</th>
+          <th>Total Amount</th>
+          <th>More Info</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% for(let i = 0; i < user.bills.length; i++) { %>
+          <%
+            let date = user.bills[i].invoice.date.getDate();
+            let month = user.bills[i].invoice.date.getMonth() + 1;
+            let year = user.bills[i].invoice.date.getFullYear();
+            let fullDate = date + "-" + month + "-" + year;
+          %>
+
+          <tr>
+            <td> <%= i + 1 %> </td>
+            <td> <%= user.bills[i].reciever.firmName %> </td>
+            <td> <%= user.bills[i].invoice.number %> </td>
+            <td> <%= fullDate %> </td>
+            <td> <%= user.bills[i].invoiceTotal.value %></td>
+            <td> <a href="/bills/<%= user.bills[i]._id %>" class="btn btn-warning"> <span class="glyphicon glyphicon-chevron-right"></span> </a> </td>
+          </tr>
+
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
 
 
 <% include ../partials/footer %>

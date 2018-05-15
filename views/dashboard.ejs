@@ -1,47 +1,57 @@
 <% include ./partials/header %>
 <% include ./navbar %>
+<style>
+  a {
+    background-color: transparent;
+    /* 1 */
+    -webkit-text-decoration-skip: objects;
+    /* 2 */
+  }
+</style>
 <div class="container-fluid">
   <h1 class="jumbotron">Welcome <%= user.firmName %></h1>
   <div class="container">
     <div class="row">
-
-      <div class="col-md-4 panel panel-default">
-        <hr>
-        <div>
-          <img src="/imgs/view.jpeg" alt="" height="300" width="100%">
-        </div>
-        <hr>
-        <div class="panel-body">
-          <p>
-            <strong>Keep track of all your invoices!</strong>
-          </p>
-          <a href="/bills" class="btn btn-primary">View Invoices</a>
-        </div>
-      </div>
-
-
-      <div class="col-md-4 panel panel-default">
-        <hr>
-        <div>
-          <img src="/imgs/create.jpeg" alt="" height="300" width="100%">
-        </div>
-        <hr>
-        <div class="panel-body">
-          <p><strong class="">Create a new bill without hassles!</strong></p>
-          <a href="/bills/new" class="btn btn-success">Create Invoice</a>
+      <div class="col-md-4">
+        <div class="thumbnail">
+          <hr>
+          <a href="/bills">
+            <img class="img-rounded" src="/imgs/view.jpeg" alt="" width="100%">
+            <hr>
+            <div class="text-center">
+              <p><strong>Keep track of all your invoices!</strong></p>
+              <button class="btn btn-primary">Check Your Cabinet     <span class="glyphicon glyphicon-th-list"></span></button>
+            </div>
+          </a>
+          <br>
         </div>
       </div>
-
-
-      <div class="col-md-4 panel panel-default">
-        <hr>
-        <div>
-          <img src="/imgs/edit.png" alt="" height="300" width="100%">
+      <div class="col-md-4">
+        <div class="thumbnail">
+          <hr>
+          <a href="/bills/new">
+            <img class="img-rounded" src="/imgs/create.jpeg" alt="" height="300" width="100%">
+            <hr>
+            <div class="text-center">
+              <p><strong>Create a new bill without hassles!</strong></p>
+              <button class="btn btn-success">Add New Bill  <span class="glyphicon glyphicon-plus"></span></button>
+            </div>
+          </a>
+          <br>
         </div>
-        <hr>
-        <div class="panel-body">
-          <p><strong class="">Edit Billing/Profile Info</strong></p>
-          <a href="/users/<%= user._id %>/edit" class="btn btn-warning">Edit Info</a>
+      </div>
+      <div class="col-md-4">
+        <div class="thumbnail">
+          <hr>
+          <a href="/users/<%= user._id %>/edit">
+            <img class="img-rounded" src="/imgs/edit.png" alt="" height="300" width="230">
+            <hr>
+            <div class="text-center">
+              <p><strong>Edit Billing/Profile Info</strong></p>
+              <button class="btn btn-warning">Edit Info  <span class="glyphicon glyphicon-pencil"></span></button>
+            </div>
+          </a>
+          <br>
         </div>
       </div>
     </div>
