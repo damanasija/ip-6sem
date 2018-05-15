@@ -15,7 +15,7 @@ let display = "none";
 
 function requireLogin (req, res, next) {
     if (!req.user) {
-      res.redirect('/login');
+      return res.render("login", {error: "You must login to continue.", display: "block"});
     } else {
       next();
     }

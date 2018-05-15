@@ -11,18 +11,19 @@
         </span>
       </div>
     </div>
-    <table class="table table-striped">
+    <table class="table table-striped table-bordered">
       <thead>
         <tr>
-          <th>#</th>
-          <th>Reciever</th>
-          <th>Invoice Number</th>
-          <th>Invoice Date</th>
-          <th>Total Amount</th>
-          <th>More Info</th>
+          <th class="text-center">#</th>
+          <th class="text-center">Reciever</th>
+          <th class="text-center">Invoice No</th>
+          <th class="text-center">Invoice Date</th>
+          <th  class="text-center">Total Amount</th>
+          <th class="text-center">Type</th>
+          <th class="text-center">More Info</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="">
         <% for(let i = 0; i < user.bills.length; i++) { %>
           <%
             let date = user.bills[i].invoice.date.getDate();
@@ -31,12 +32,13 @@
             let fullDate = date + "-" + month + "-" + year;
           %>
 
-          <tr>
+          <tr class="text-center">
             <td> <%= i + 1 %> </td>
             <td> <%= user.bills[i].reciever.firmName %> </td>
             <td> <%= user.bills[i].invoice.number %> </td>
             <td> <%= fullDate %> </td>
             <td> <%= user.bills[i].invoiceTotal.value %></td>
+            <td> <%= user.bills[i].invoice.type.toUpperCase() %> </td>
             <td> <a href="/bills/<%= user.bills[i]._id %>" class="btn btn-warning"> <span class="glyphicon glyphicon-chevron-right"></span> </a> </td>
           </tr>
 

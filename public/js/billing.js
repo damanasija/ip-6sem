@@ -7,11 +7,11 @@ document.getElementById("recieverState").value = document.getElementById("userSt
 let sgstSerialNo = 0;
 let igstSerialNo = 0;
 let taxRates = null;
-let nonDigitsRegex = /[^0-9\.]/g;
-let digitsRegex = /^[0-9]+\.?[0-9]*$/;
-const dangerClass = "alert alert-danger";
-const successClass = "alert alert-success";
-const states = [
+let NON_DIGITS_REGEX = /[^0-9\.]/g;
+let ALPHABET_REGEX = /[^0-9]/g;
+const DANGER_CLASS = "alert alert-danger";
+const SUCCESS_CLASS = "alert alert-success";
+const STATES = [
     {
         "key": "AN",
         "name": "ANDAMAN AND NICOBAR ISLANDS"
@@ -214,6 +214,16 @@ const isValidDescription = (rowRef) => {
     return true;
 }
 
+const validateRecieverPhone = () => {
+    let phone = document.getElementById("recieverPhone");
+    if(isNaN(phone.value)){
+        phone.value = phone.value.replace(/[^0-9]/g, "");
+    }
+    if(phone.value.length > 10){
+        phone.value = phone.value.substr(0, 10);
+    }
+}
+
 const billSelector = () =>{
     userState = document.getElementById("userState").innerHTML;
     recieverState = document.getElementById("recieverState").value;
@@ -241,7 +251,7 @@ const setHsn = (rowRef) => {
 const setQty = (rowRef, type) => {
     let qty = rowRef.childNodes[3].firstChild;
     if(isNaN(qty.value)){
-        qty.value = qty.value.replace(nonDigitsRegex, "");
+        qty.value = qty.value.replace(NON_DIGITS_REGEX, "");
         if(qty.value.split('.').length > 2)
             qty.value = qty.value.replace(/\.+$/, "");
         if(isNaN(qty.value))
@@ -262,7 +272,7 @@ const setDiscount = (rowRef, type) => {
     let discount = rowRef.childNodes[6].firstChild;
 
     if(isNaN(discount.value)){
-        discount.value = discount.value.replace(nonDigitsRegex, "");
+        discount.value = discount.value.replace(NON_DIGITS_REGEX, "");
         if(discount.value.split('.').length > 2)
             discount.value = discount.value.replace(/\.+$/, "");
         if(isNaN(discount.value))
@@ -302,7 +312,7 @@ const setTaxRate = (rowRef, index, type) => {
         }
     }
     if(isNaN(taxRate.value)){
-        taxRate.value = taxRate.value.replace(nonDigitsRegex, "");
+        taxRate.value = taxRate.value.replace(NON_DIGITS_REGEX, "");
         if(taxRate.value.split('.').length > 2)
             taxRate.value = taxRate.value.replace(/\.+$/, "");
         if(isNaN(taxRate.value))
@@ -319,7 +329,7 @@ const setTaxRate = (rowRef, index, type) => {
 const setRatePerItem = (rowRef, type) => {
     let ratePerItem = rowRef.childNodes[5].firstChild;    
     if(isNaN(ratePerItem.value)){
-        ratePerItem.value = ratePerItem.value.replace(nonDigitsRegex, "");
+        ratePerItem.value = ratePerItem.value.replace(NON_DIGITS_REGEX, "");
         if(ratePerItem.value.split('.').length > 2)
             ratePerItem.value = ratePerItem.value.replace(/\.+$/, "");
         if(isNaN(ratePerItem.value))
@@ -345,6 +355,7 @@ const setRatePerItem = (rowRef, type) => {
 const isValidReciever = () => {
     let name = document.getElementById("recieverName");
     let gstin = document.getElementById("recieverGSTIN");
+    let phone = document.getElementById("recieverPhone");
     let address = document.getElementById("recieverAddress");
     let city = document.getElementById("recieverCity");
     let pin = document.getElementById("recieverPin");
@@ -365,13 +376,32 @@ const isValidReciever = () => {
         return false;
     }
     if(gstin.value == ""){
-        alert("Recipient's GSTIN can't be empty!");
-        gstin.focus();
+        let ans = confirm("Are you sure you to keep GSTIN Empty?");
+        if(ans === false){
+            gstin.focus();
+            return false;
+        }
+    }
+    else {
+        if(gstin.value.length != 15){
+            alert("Invalid recipient GSTIN");
+            gstin.focus();
+            return false;
+        }
+    }
+    if(phone.value == ""){
+        alert("Empty Contact Info");
+        phone.focus();
         return false;
     }
-    if(gstin.value.length != 15){
-        alert("Invalid recipient GSTIN");
-        gstin.focus();
+    if(isNaN(phone.value)){
+        alert("Phone Number is Numeric.");
+        phone.focus();
+        return false;
+    }
+    if(phone.value.length != 10){
+        alert("Not a valid Phone Number");
+        phone.focus();
         return false;
     }
     if(address.value == ""){
@@ -435,6 +465,7 @@ const getRecieverDetails = () => {
     let reciever = {
         firmName: document.getElementById("recieverName").value,
         gstin: document.getElementById("recieverGSTIN").value,
+        phone: document.getElementById("recieverPhone").value,
         address: document.getElementById("recieverAddress").value,
         city: document.getElementById("recieverCity").value,
         pincode: document.getElementById("recieverPin").value,

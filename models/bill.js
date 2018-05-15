@@ -16,13 +16,13 @@ const billSchema = new mongoose.Schema({
   },
   reciever: {
     firmName: { type: String, required: true },
-    gstin: { type: String, required: true },
+    gstin: { type: String },
+    phone: { type: String, required: true},
     address: { type: String, required: true },
     city: { type: String, required: true },
     pincode: { type: String, required: true },
     state: { type: String, required: true },
     country: { type: String, required: true },
-    
   },
   invoice: {
     number: { type: Number },
