@@ -107,7 +107,7 @@ app.get("/bills/:id",requireLogin, (req, res) => {
             if(err){
                 res.status(501).send(err);
             } else {
-                res.render("bills/show", { bill: foundBill});
+                res.render("bills/show-igst", { bill: foundBill});
             }
         });
     }

@@ -161,6 +161,14 @@ const STATES = [
 /*-----------------------------------------------------------------------
 |               Generic Functions(Not related to billing)               |
 -----------------------------------------------------------------------*/
+
+function forprint(){
+    if (!window.print){
+    return
+    }
+    window.print();
+}
+
 const displayMessage = (msgString, classValue) => {
     let timeout = 2000;
     let messageDiv = document.getElementById("message");
