@@ -36,7 +36,6 @@ app.use(session({
     cookieName: "session",
     secret: "daseqw1231fsaAADfdfa",
     duration: 30 * 60 * 1000,
-    activeDuration: 5 * 60 * 1000,
     httpOnly: true,
     ephemeral: true,
 }));
@@ -62,6 +61,14 @@ app.use(function(req, res, next) {
 
 //get routes
 app.get("/", (req, res) => {
+    if(!(req.session && req.session.userId)){
+        res.render("landing");
+    } else {
+        res.redirect("/dashboard");
+    }
+});
+
+app.get("/about", (req, res) => {
     res.render("about");
 });
 
@@ -107,7 +114,10 @@ app.get("/bills/:id",requireLogin, (req, res) => {
             if(err){
                 res.status(501).send(err);
             } else {
-                res.render("bills/show-igst", { bill: foundBill});
+                if(foundBill.invoice.type === "intra-state")
+                res.render("bills/show-intrastate", { bill: foundBill});
+                if(foundBill.invoice.type === "inter-state")
+                    res.render("bills/show-interstate", {bill: foundBill});
             }
         });
     }
@@ -166,7 +176,7 @@ app.post("/bills", requireLogin, (req, res) => {
                     if(err){
                         res.status(501).send("Internal server error. Couldn't save it");
                     } else {
-                        res.send(foundUser);
+                        res.status(200).send(newBill._id);
                     }
                 });
             });

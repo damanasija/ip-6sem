@@ -1,4 +1,7 @@
 <% include ./partials/header%>
+<title>Register for Winch</title>
+</head>
+<body>
 <% include ./navbar %>
 <h1 class="jumbotron text-center">Sign Up for Winch</h1>
 
@@ -61,12 +64,6 @@
             <label for="company_name">Company Name</label>
             <input type="text" name="user[firmName]" class="form-control" id="companyName" placeholder="Company Name" required>
           </div>
-
-          <!-- company email -->
-          <!-- <div class="form-group">
-            <label for="email">Company Email</label>
-            <input type="email" name="confirmEmail" class="form-control" id="confirmEmail" placeholder="Email" required>
-          </div> -->
 
           <!-- company phone and GSTIN fields in a single row -->
           <div class="form-group">
@@ -153,11 +150,14 @@
         </div>
       </div>
     </div>
-
     <br>
     <input type="submit" class="btn btn-success  btn-lg center-block" value="submit">
   </form>
 </div>
+
+<script>
+  document.getElementById("register").className = "active";
+</script>
 
 
 <% include ./partials/footer%>

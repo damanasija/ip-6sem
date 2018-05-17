@@ -162,12 +162,6 @@ const STATES = [
 |               Generic Functions(Not related to billing)               |
 -----------------------------------------------------------------------*/
 
-function forprint(){
-    if (!window.print){
-    return
-    }
-    window.print();
-}
 
 const displayMessage = (msgString, classValue) => {
     let timeout = 2000;
@@ -436,21 +430,72 @@ const isValidReciever = () => {
 }
 
 const sendToServer = (billObject) => {
-    console.log(billObject);
 
     let bill = JSON.stringify(billObject);
     xhr = new XMLHttpRequest();
     xhr.open("POST", "/bills", true);
     xhr.setRequestHeader("Content-type", "application/json");
     xhr.onload = function() {
-        console.log(this.responseText);
         if(this.status == 200){
-            if(this.responseText == "OK"){
-                alert("Bill submitted to server");
+            if(this.responseText != ""){
+                alert("Bill submitted to server. Click on view button to view bill.");
+                //disable all input fields
+                disableEverything();
+                //enable view button
+                let viewButton = document.getElementById("viewButton");
+                let billId = this.responseText.split('"').join('');
+                console.log(billId);
+                viewButton.setAttribute("href", `/bills/${billId}`);
+                viewButton.className = "btn btn-success";
             }
         }
     }
     xhr.send(bill);
+}
+
+const disableEverything = () => {
+    //disabling submit buttons
+    document.getElementById("sgstAdd").disabled = true;
+    document.getElementById("sgstSubmit").disabled = true;
+
+
+    document.getElementById("igstAdd").disabled = true;
+    document.getElementById("igstSubmit").disabled = true;
+
+    document.getElementById("recieverName").disabled = true;
+    document.getElementById("recieverGSTIN").disabled = true;
+    document.getElementById("recieverPhone").disabled = true;
+    document.getElementById("recieverAddress").disabled = true;
+    document.getElementById("recieverCity").disabled = true;
+    document.getElementById("recieverPin").disabled = true;
+    document.getElementById("recieverState").disabled = true;
+
+    let sgstTable = document.getElementById("sgstTableBody");
+    for(let i = 0; i < sgstTable.childElementCount; i++){
+        sgstTable.childNodes[i].childNodes[1].firstChild.disabled = true;
+        sgstTable.childNodes[i].childNodes[2].firstChild.disabled = true;
+        sgstTable.childNodes[i].childNodes[3].firstChild.disabled = true;
+        sgstTable.childNodes[i].childNodes[4].firstChild.disabled = true;
+        sgstTable.childNodes[i].childNodes[5].firstChild.disabled = true;
+        sgstTable.childNodes[i].childNodes[6].firstChild.disabled = true;
+        sgstTable.childNodes[i].childNodes[8].firstChild.disabled = true;
+        sgstTable.childNodes[i].childNodes[13].firstChild.disabled = true;
+        
+        sgstTable.childNodes[i].childNodes[13].firstChild.disabled = true;
+    }
+
+    let igstTable = document.getElementById("igstTableBody");
+    for(let i = 0; i < igstTable.childElementCount; i++){
+        igstTable.childNodes[i].childNodes[1].firstChild.disabled = true;
+        igstTable.childNodes[i].childNodes[2].firstChild.disabled = true;
+        igstTable.childNodes[i].childNodes[3].firstChild.disabled = true;
+        igstTable.childNodes[i].childNodes[4].firstChild.disabled = true;
+        igstTable.childNodes[i].childNodes[5].firstChild.disabled = true;
+        igstTable.childNodes[i].childNodes[6].firstChild.disabled = true;
+        igstTable.childNodes[i].childNodes[7].firstChild.disabled = true;
+        igstTable.childNodes[i].childNodes[8].firstChild.disabled = true;
+        igstTable.childNodes[i].childNodes[11].firstChild.disabled = true;
+    }
 }
 
 const getSenderDetails = () => {
@@ -458,7 +503,7 @@ const getSenderDetails = () => {
         firmName: document.getElementById("userFirmName").innerHTML,
         gstin: document.getElementById("userGstin").innerHTML,
         email: document.getElementById("userEmail").innerHTML,
-        phone: document.getElementById("userPhone").innerHTML,
+        phone: "+91" + document.getElementById("userPhone").innerHTML,
         address: document.getElementById("userAddress").innerHTML,
         city: document.getElementById("userCity").innerHTML,
         pincode: document.getElementById("userPin").innerHTML,
@@ -473,14 +518,13 @@ const getRecieverDetails = () => {
     let reciever = {
         firmName: document.getElementById("recieverName").value,
         gstin: document.getElementById("recieverGSTIN").value,
-        phone: document.getElementById("recieverPhone").value,
+        phone: "+91" + document.getElementById("recieverPhone").value,
         address: document.getElementById("recieverAddress").value,
         city: document.getElementById("recieverCity").value,
         pincode: document.getElementById("recieverPin").value,
         state: document.getElementById("recieverState").value,
         country: document.getElementById("recieverCountry").value
     }
-    console.log(reciever);
     return reciever;
 }
 
@@ -749,9 +793,9 @@ const populateSgstValues = () => {
         if(row.childNodes[12].firstChild.value != "")
             totalNet += parseFloat(row.childNodes[12].firstChild.value);
     }
-    taxableTotal.value = totalGross;
-    taxTotal.value = totalTax*2;
-    invoiceTotal.value = totalNet;
+    taxableTotal.value = roundTo(totalGross, 2);
+    taxTotal.value = roundTo(totalTax*2, 2);
+    invoiceTotal.value = roundTo(totalNet, 2);
 }
 
 const isSgstValid = () => {
@@ -1062,9 +1106,9 @@ const populateIgstValues = () => {
         if(row.childNodes[10].firstChild.value != "")
             totalNet += parseFloat(row.childNodes[10].firstChild.value);
     }
-    taxableTotal.value = totalGross;
-    taxTotal.value = totalTax;
-    invoiceTotal.value = totalNet;
+    taxableTotal.value = roundTo(totalGross, 2);
+    taxTotal.value = roundTo(totalTax, 2);
+    invoiceTotal.value = roundTo(totalNet, 2);
 }
 
 const isIgstValid = () => {

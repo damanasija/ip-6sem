@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Invoice
+    <%= bill.invoice.number %>
+  </title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="/stylesheets/invoice/base.css" rel="stylesheet" type="text/css" />
+
+
+
+  <!-- NOTHING IN THIS FILE SHOULD BE EDITED EXCEPT THESE PATHS TO YOUR THEME STYLESHEETS  -->
+
+  <link href="/stylesheets/invoice/bauhaus.css" rel="stylesheet" type="text/css" />
+  <link href="/stylesheets/invoice/bauhaus_print.css" media="print" rel="stylesheet" type="text/css" />
+
+  <!-- NOTHING IN THIS FILE SHOULD BE EDITED EXCEPT THESE PATHS TO YOUR THEME STYLESHEETS  -->
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    .hidden{
+      display: none;
+    }
+
+    .button {
+      background-color: #4CAF50; /* Green */
+      border: none;
+      color: white;
+      padding: 15px 32px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+    }
+    .column {
+      float: left;
+      width: 50%;
+      padding: 10px;
+      height: auto;
+      font-family:Arial, Helvetica, sans-serif;
+      font-size: medium;
+    }
+    
+    .bg-info{
+      background-color:#d9edf7;
+    }
+    .row:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+
+    .pagestyle {
+      width: 1000px;
+    }
+
+    table {
+      border-collapse: collapse;
+    }
+
+    table,
+    th,
+    td {
+      border: 1px solid black;
+    }
+
+    .container {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: medium;
+      width: 100%;
+      height: 150px;
+      margin-bottom: 50px;
+      margin-top: 50px
+    }
+
+    .left {
+      float: left;
+      width: 100px;
+    }
+
+    .center {
+      display: inline-block;
+      margin: 0 auto;
+      width: 100px;
+    }
+
+    .right {
+      float: right;
+      width: 200px;
+    }
+
+    .text-right {
+      text-align: right;
+    }
+  </style>
+
+  
+  </head>
+  <body>
+      <%
+      let date = "";
+      let day = bill.invoice.date.getDay();
+      let month = bill.invoice.date.getMonth() + 1;
+      let year = bill.invoice.date.getFullYear();
+      date = day + "-" + month + "-" + year;
+    %>
+    <div id="invoice" class="pagestyle">
+      <div id="invoice-header">
+        <h1 class="right">Invoice#: <strong><%= bill.invoice.number %></strong></h1>
+        <h3>Dated: <%= date %></h3>
+  </div>
+  <hr>
+  <div class="row">
+    <div class="column">
+      <h3>Bill From:-</h3>
+      <%
+        if(bill.reciever.gstin == null || bill.reciever.gstin == "" ){
+          bill.reciever.gstin = "<No GSTIN>";
+        }
+        bill.reciever.email = "";
+      %>
+      <div class="fn">
+        <strong>
+          <%= bill.sender.firmName %>
+        </strong>
+      </div>
+      <div class="adr bg-info">
+        <div class="street-address">
+          <strong><%= bill.sender.address %></strong>
+        </div>
+        <div id="client-postcode">
+          <span>
+            <strong><%= bill.sender.city %></strong>
+          </span>,
+          <span class="postal-code">
+            <strong><%= bill.sender.pincode %></strong>
+          </span>
+        </div>
+        <div class="state">
+          <strong><%= bill.sender.state %></strong>
+        </div>
+        <div id="senderGSTIN">
+          <strong><%= bill.sender.gstin %></strong>
+        </div>
+        <div id="senderPhone">
+          <strong><%= bill.sender.phone %></strong>
+        </div>
+        <div id="senderEmail">
+            <strong><%= bill.sender.email %></strong>
+        </div>
+      </div>
+    </div>
+    <div class="column">
+      <h3>Bill to:-</h3>
+      <div>
+        <strong>
+          <%= bill.reciever.firmName %>
+        </strong>
+      </div>
+      <div class="adr bg-info">
+        <div class="street-address">
+          <strong><%= bill.reciever.address %></strong>
+        </div>
+        <div id="client-postcode">
+          <span>
+            <strong><%= bill.reciever.city %></strong>
+          </span>,
+          <span class="postal-code">
+            <strong><%= bill.reciever.pincode %></strong>
+          </span>
+        </div>
+        <div class="state">
+          <strong><%= bill.reciever.state %></strong>
+        </div>
+        <div id="recieverPhone">
+          <strong><%= bill.reciever.phone %></strong>
+        </div>
+        <div id="recieverGSTIN">
+          <strong><%= bill.reciever.gstin %></strong>
+        </div>
+        <div id="recieverEmail">
+          <strong>&nbsp;</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <table id="invoice-amount">
+    <thead>
+      <tr id="header_row bg-info">
+        <th rowspan="2">Sr</th>
+        <th rowspan="2">Description Of Goods</th>
+        <th rowspan="2">HSN</th>
+        <th rowspan="2">QTY</th>
+        <th rowspan="2">Unit</th>
+        <th rowspan="2">Rate per item (&#x20b9;)</th>
+        <th rowspan="2">Discount</th>
+        <th rowspan="2">Taxable Value</th>
+        <th colspan="2">CGST</th>
+        <th colspan="2">SGST</th>
+        <th rowspan="2">Net Amount</th>
+      </tr>
+      <tr id="header_row bg-info">
+        <th>Rate</th>
+        <th>Amount</th>
+        <th>Rate</th>
+        <th>Amount</th>
+      </tr>
+    </thead>
+    <tfoot>
+      <tr id="discount_tr">
+        <td colspan="10">&nbsp;</td>
+        <td colspan="2" class="item_r">
+          <strong>Total Taxable Amount(&#x20b9;)</strong>
+        </td>
+        <td class="item_r">
+          <%= bill.totalTaxableAmount.value %>
+        </td>
+      </tr>
+      <tr id="net_total_tr odd">
+        <td colspan="10">&nbsp;</td>
+        <td colspan="2" class="item_r">
+          <strong>Total Tax(&#x20b9;)</strong>
+        </td>
+        <td class="item_r">
+          <%= bill.totalTax.value %>
+        </td>
+      </tr>
+      <tr id="total_tr">
+        <td colspan="10">&nbsp;</td>
+        <td colspan="2" class="total" id="total_currency">
+          <span class="currency">INR(&#x20b9;)</span> Total</td>
+        <td class="total">
+          <%= bill.invoiceTotal.value %>
+        </td>
+      </tr>
+    </tfoot>
+    <tbody>
+      <% for(let i = 0; i < bill.items.length; i++) { %>
+        <%
+              let rowClass  = "";
+              let hsn = ""; 
+              if(i % 2 == 0) {
+                rowClass = "list";
+              } else {
+                rowClass = "list odd";
+              }
+              if( bill.items[i].hsn == null){
+                hsn = "---";
+              } else {
+                hsn = bill.items[i].hsn;
+              }
+            %>
+          <tr class="<%= rowClass %>">
+            <td>
+              <%= bill.items[i].sr %>
+            </td>
+            <td>
+              <%= bill.items[i].description %>
+            </td>
+
+            <td>
+              <%= hsn %>
+            </td>
+            <td>
+              <%= bill.items[i].quantity %>
+            </td>
+            <td>
+              <%= bill.items[i].unit %>
+            </td>
+            <td class="item_r">
+              <%= bill.items[i].ratePerItem.value %>
+            </td>
+            <td class="item_r">
+              <%= bill.items[i].discount.value %>
+            </td>
+            <td class="item_r">
+              <%= bill.items[i].taxableValue.value %>
+            </td>
+            <td class="item_r">
+              <%= bill.items[i].cgstRate.value %>
+            </td>
+            <td class="item_r">
+              <%= bill.items[i].cgstAmount.value %>
+            </td>
+            <td class="item_r">
+              <%= bill.items[i].sgstRate.value %>
+            </td>
+            <td class="item_r">
+              <%= bill.items[i].sgstAmount.value %>
+            </td>
+            <td class="item_r">
+              <%= bill.items[i].netAmount.value %>
+            </td>
+          </tr>
+          <% } %>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <div id="invoice-other">
+      <h2>Signature</h2>
+      <div id="contract-number">
+        <strong> (
+        <%= bill.sender.firmName %>)</strong>
+      </div>
+    </div>
+  <a id="print" class="button" href="javascript:printDoc()">Print</a>  
+  </div>
+  <script>
+    function printDoc() {
+      let link = document.getElementById("print");
+      link.className = "hidden";
+      window.print();
+      link.className = "button";
+    }
+  </script>
+  </body>
+
+</html>

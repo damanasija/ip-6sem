@@ -1,28 +1,62 @@
 <% include ./partials/header %>
+</head>
+<body>
 <% include ./navbar %>
 
-<div class="text-center">
-    <div class="container-fluid jumbotron">
+<div class="">
+    <div class=" text-center container-fluid jumbotron">
         <br>
         <br>
         <h1 class="text-large center-block" title="Winch">Winch</h1>
         <p class="center-block">Winch is an online GST ready billing management system that lets you generate invoices from anywhere!</p>
     </div>
-</div>
-
-<br><br><br>
-<div class="container">
-    <div class="row">
-        <div class="col-md-4">
-            <!-- Dummy text to make the button centered -->
-        </div>
-        <div class="col-md-4 text-center">
-            <a href="/signup" class="btn btn-lg btn-success" title="Sign Up">Sign Up for free</a>
-        </div>
-        <div class="col-md-4">
-            <!-- Dummy text to make the button centered -->
-        </div>
+    <div class="container text-left well">
+        <h1>GST: Explained in Numbers</h1>
+        <p>
+            For example, suppose a person wants to buy a shirt. Now in order to determine the price of the shirt,
+            we need to start from the very first step i.e. purchase of raw material.
+        </p>
+        <h3>NON-GST PROCEDURE:</h3>
+        <p>
+            Raw material was purchased for say Rs. 100 (inclusive of Rs. 10 as tax). A value of Rs. 50 is added to it by the manufacturer.
+        </p>
+        <p>
+            This good is sold to wholesaler at Rs. 165 (inclusive of 10% tax).
+            Now the wholesaler adds his margin of Rs. 20 to it and sells it to the retailer at Rs. 203.5 (inclusive of 10% tax).
+        </p>
+        <p>
+            Retailer then adds his margin of Rs. 20 more and sells this good to the consumer at Rs. 245.85 (inclusive of 10% tax).    
+        </p>
+        <p>
+            Hence the good costs Rs. 245.85 to the consumer which includes Rs. 65.85 paid as tax.
+        </p>
+        <h3>
+            GST PROCEDURE:
+        </h3>
+        <p>
+            Raw material was purchased for say Rs. 100 (inclusive of ₹10 as tax). A value of Rs. 50 is added to it by the manufacturer.
+        </p>
+        <p>
+            This good is sold to wholesaler at Rs. 150 (10% Tax on 150 is 15 but Rs. 10 is already calculated on raw material,
+             so effective tax set aside at this stage is only RS. 5(Rs. 15-Rs. 10).
+        </p>
+        <p>
+            Now the wholesaler adds his margin of ₹20 to it and sells it to the retailer at
+             Rs. 170(10% tax on Rs. 170 is 17 but 15 is already set aside, so effective tax set aside at this stage us Rs. 2).
+        </p>
+        <p>
+            Retailer then adds his margin of Rs. 20 more and sells this good to the consumer at Rs. 209
+            (inclusive of all earlier taxes viz. Rs. 10+Rs. 5+Rs. 2+Rs. 2 {10%tax set aside on retailer stage}).
+        </p>
+        <p>
+            Hence the good costs Rs. 209 to the consumer which includes Rs. 19 paid as tax.
+        </p>
+        <p>
+            Thus, by way of GST concept, the commodity is relatively cheaper as there is no cascading effect.
+        </p>
     </div>
 </div>
-
+<script>
+    document.getElementById("about").className = "active";
+</script>
 <% include ./partials/footer %>

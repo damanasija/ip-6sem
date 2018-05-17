@@ -1,11 +1,13 @@
 <% include ./partials/header%>
-<%include ./navbar %>
-
+<title>Login</title>
 <style>
   div#message{
     display: none;
   }
 </style>
+</head>
+<body>
+<%include ./navbar %>
 
 <h1 class="jumbotron text-center">Login</h1>
 
@@ -40,38 +42,9 @@
     <div class="col-md-3"></div>
   </form>
 </div>
-<!-- <script>
-  const displayError = (message) => {
-    let messageDiv = document.getElementById("message");
-    messageDiv.innerHTML = message;
-    messageDiv.style.display = "block";
-    setTimeout(() => {
-      messageDiv.style.display = "none";      
-    }, 2000);
-  }
-  function validateForm () {
-    let messageDiv = document.getElementById("message");
-    let username = document.getElementById("email");
-    let password = document.getElementById("password");
-    if((username.value == "") && (password.value == "")){
-      displayError("<strong>All fields are required.</strong>");
-      return false;
-    }
-    if (username.value == "") {
-      displayError("Username is empty.")
-      return false;
-    }
-    if (username.value.length < 4) {
-      displayError("<strong>Username</strong> is short!");
-      return false;
-    }
-    if (password.value == "") {
-      displayError("<strong>Password</strong> field is empty!");
-      return false;
-    }
-    return true;
-  }
-</script> -->
 
+<script>
+  document.getElementById("login").className = "active";
+</script>
 
 <% include ./partials/footer%>

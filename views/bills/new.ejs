@@ -1,5 +1,7 @@
 <% include ../partials/header.ejs %>
-<% include ../navbar.ejs %>
+</head>
+<body>
+<% include ../partials/login-navbar.ejs %>
 
 <%
     let today = new Date() 
@@ -11,6 +13,10 @@
     }
     .space{
         margin: 1em 0em 1em 0em;
+    }
+    a.disabled {
+        pointer-events: none;
+        cursor: default;
     }
 </style>
 <hr>
@@ -186,7 +192,7 @@
             </div>
         </div>
         <div class="col-md-1">
-            <button class="btn btn-primary" onclick="addSgstItem()">Add Item</button>
+            <button class="btn btn-primary" id="sgstAdd" onclick="addSgstItem()">Add Item</button>
             <button class="btn btn-success" id="sgstSubmit" onclick="generateSgstBill()" style="margin-top: 1.5em;" disabled>Submit</button>          
         </div>    
     </div>
@@ -242,17 +248,29 @@
             </div>
         </div>
         <div class="col-md-1">
-            <button class="btn btn-primary" onclick="addIgstItem()">Add Item</button>
+            <button class="btn btn-primary" id="igstAdd" onclick="addIgstItem()">Add Item</button>
             <button disabled="disabled" id="igstSubmit" class="btn btn-success" style="margin-top: 1.5em;" onclick="generateIgstBill()">Submit</button>
         </div>    
     </div>
 </div>
 </div>
 </div>
-<div align="center">
-        <a href="javascript:forprint()">
-            <img src="http://www.iconarchive.com/download/i18772/iconshock/real-vista-text/print.ico" style="border:0; align:middle;width:5%"> Click here to Print the Page</a>
+<hr>
+<div class="container">
+    <div class="row">
+        <div class="col-md-5"></div>
+        <div class="col-md-2 well">
+            <center>
+                <a href="/bills/null" id="viewButton" target="_blank" class="btn btn-primary disabled">View Bill</a>
+            </center>
+        </div>
+        <div class="col-md-5"></div>
+    </div>
 </div>
+<hr>
+<script>
+    document.getElementById("new").className = "active";
+</script>
 <script src="/js/billing.js"></script>
 
 <% include ../partials/footer.ejs %>
