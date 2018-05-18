@@ -189,5 +189,5 @@ app.post("/bills", requireLogin, (req, res) => {
 });
 
 app.listen(process.env.PORT || 3000, () => {
-    console.log(`Server started at ${IP} at port ${PORT}`);
+    console.log(`Server started at port ${PORT}`);
 });
