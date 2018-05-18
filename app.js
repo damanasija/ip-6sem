@@ -22,7 +22,6 @@ function requireLogin (req, res, next) {
 };
 
 const PORT  = process.env.PORT || 3000;
-const IP    = process.env.IP || 'localhost';
 
 
 // mongoose.connect("mongodb://localhost/test_app");
@@ -189,6 +188,6 @@ app.post("/bills", requireLogin, (req, res) => {
     });
 });
 
-app.listen(PORT, IP, () => {
+app.listen(process.env.PORT || 3000, () => {
     console.log(`Server started at ${IP} at port ${PORT}`);
 });
