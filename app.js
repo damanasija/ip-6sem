@@ -128,7 +128,7 @@ app.get("/bills/:id",requireLogin, (req, res) => {
 });
 
 app.get("/users/:id/edit", (req, res) => {
-    res.status(200).send("Edit user route");
+    res.status(200).send("This page is under construction.");
 });
 
 

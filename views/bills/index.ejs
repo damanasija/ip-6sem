@@ -42,7 +42,7 @@
             <td> <%= fullDate %> </td>
             <td> <%= user.bills[i].invoiceTotal.value %></td>
             <td> <%= user.bills[i].invoice.type.toUpperCase() %> </td>
-            <td> <a href="/bills/<%= user.bills[i]._id %>" class="btn btn-warning"> <span class="glyphicon glyphicon-chevron-right"></span> </a> </td>
+            <td> <a href="/bills/<%= user.bills[i]._id %>" target="_blank" class="btn btn-warning"> <span class="glyphicon glyphicon-chevron-right"></span> </a> </td>
           </tr>
 
         <% } %>
