@@ -1,5 +1,25 @@
 <% include ./partials/header%>
 <title>Register for Winch</title>
+<style>
+
+
+/**
+ * style input elements that have a required
+ * attribute and a focus state
+ */
+.required {
+  border: 1px solid red;
+  outline: none;
+}
+
+/**
+ * style input elements that have a required
+ * attribute and a hover state
+ */
+input:required:hover {
+  opacity: 1;
+}
+</style>
 </head>
 <body>
 <% include ./navbar %>
@@ -9,7 +29,7 @@
   <div class="container alert alert-danger center-block text-center" style="display:<%= display %>">
     <h4><strong><%= error %></strong></h4>
   </div>
-  <form action="/register" method="POST" id="signup">
+  <form action="/register" method="POST" onsubmit="return validate()" id="signup">
 
     <div id="Login Details" class="container">
       <div class="col-md-3"></div>
@@ -93,7 +113,7 @@
           <!-- company website -->
           <div class="form-group">
             <label for="website">Company Website</label>
-            <input type="text" name="user[website]" class="form-control" id="website" placeholder="Website" required>
+            <input type="text" name="user[website]" class="form-control" id="website" placeholder="Website">
           </div>
 
         </div>
@@ -105,7 +125,7 @@
           <div class="form-group">
             <label for="address">Address</label>
             <!-- <textarea form="signup" name="address" class="form-control" id="address" required></textarea> -->
-            <input type="text" name="user[address]" class="form-control" id="address" placeholder="Address">
+            <input type="text" name="user[address]" class="form-control" id="address" placeholder="Address" required>
           </div>
 
           <!-- city -->
@@ -157,6 +177,72 @@
 
 <script>
   document.getElementById("register").className = "active";
+  function validate() {
+    let password = document.getElementById("password");
+    let confirmPassword = document.getElementById("confirmPassword");
+    let companyName = document.getElementById("companyName");
+    let phone = document.getElementById("phone");
+    let gstin = document.getElementById("gstin");
+    let website = document.getElementById("website");
+    let address = document.getElementById("address");
+    let city = document.getElementById("city");
+    let state = document.getElementById("state");
+    let pincode = document.getElementById("pincode");
+    if(password.value != confirmPassword.value){
+      alert("Passwords don't match.");
+      password.focus();
+      return false;
+    }
+    if(password.value.length < 4){
+      alert("Password to short.");
+      password.focus();
+      return false;
+    }
+    if(companyName.value.length > 30){
+      alert("Company name should not be more than 40 characters");
+      companyName.focus();
+      return false;
+    }
+    if(phone.value.length != 10 || isNaN(phone.value) ){
+      alert("Invalid phone.");
+      phone.focus();
+      return false;
+    }
+    if(gstin.value.length != 15){
+      alert("Invalid GSTIN.");
+      gstin.focus();
+      return false;
+    }
+    let websiteExpression = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi;
+    if(!website.value.match(websiteExpression)){
+      if(website.value != ""){
+        alert("Invalid website.");
+        website.focus();
+        return false;
+      }
+    }
+    if(address.length < 3){
+      alert("Address too short");
+      address.focus();
+      return false;
+    }
+    if(!isNaN(city.value) || city.value.length > 20 || city.value.length < 3){
+      alert("Invalid city name.")
+      city.focus();
+      return false;
+    }
+    if(state.value == "Select State"){
+      alert("Please select a valid State");
+      state.focus();
+      return false;
+    }
+    if(pincode.value.length != 6 || isNaN(pincode.value)){
+      alert("Pincode Invalid");
+      pincode.focus();
+      return false;
+    }
+    return true;
+  }
 </script>
 
 
