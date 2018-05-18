@@ -25,7 +25,9 @@ const PORT  = process.env.PORT || 3000;
 const IP    = process.env.IP || 'localhost';
 
 
-mongoose.connect("mongodb://localhost/test_app");
+// mongoose.connect("mongodb://localhost/test_app");
+
+mongoose.connect("mongodb://winch:winch@ds227740.mlab.com:27740/test_app");
 
 
 app.set('view engine', 'ejs');
