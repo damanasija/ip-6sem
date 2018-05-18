@@ -21,8 +21,8 @@ function requireLogin (req, res, next) {
     }
 };
 
-const PORT = process.env.PORT || 3000;
-const IP = process.env.IP ;
+const PORT  = process.env.PORT || 3000;
+const IP    = process.env.IP || 'localhost';
 
 
 mongoose.connect("mongodb://localhost/test_app");
